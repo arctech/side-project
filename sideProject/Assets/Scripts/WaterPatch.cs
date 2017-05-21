@@ -21,6 +21,14 @@ public class WaterPatch  {
 
 	}
 
+
+	public void update(Transform transform) {
+		foreach( Vector3 v in _waterPatch_verts)
+		{
+
+		}
+	}
+
 	public void build(Vector3 center, float span) {
 		_waterPatch_verts.Clear();
 	//	_boatMeshCenter = _boatMesh.bounds.center;

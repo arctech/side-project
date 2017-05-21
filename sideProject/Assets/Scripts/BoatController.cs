@@ -22,21 +22,20 @@ public class BoatController : MonoBehaviour {
 
 	private int _totalSubmergedCount = 0;	
 
-//	private float _waterPatchCellWidth = 1.0f;
-//	private int _num_waterPatch_tiles = 5;
+	private float _waterPatchCellWidth = 1.0f;
+	private int _num_waterPatch_tiles = 5;
 	private Vector3 _boatMeshCenter = Vector3.zero; // boat mesh bounding box center
 	private float _boatMeshDiagLength = 0.0f; // length of diagonal of boat mesh bounding box
 
-//	private List<Vector3> _waterPatch_verts = new List<Vector3>();
+	private List<Vector3> _waterPatch_verts = new List<Vector3>();
 
 	public GameObject _sentinelSphere = null;
 	private Mesh _boatMesh = null;
 
 	private string _debugMsg = "";
 
-//	private Vector3 _zG = new Vector3();
+	private Vector3 _zG = new Vector3();
 
-	private WaterPatch _waterPatch = new WaterPatch();
 		
 	// Use this for initialization
 	void Start () {
@@ -44,7 +43,7 @@ public class BoatController : MonoBehaviour {
 		_boatMesh = this.GetComponent<MeshFilter>().mesh;
 
 		_boatMeshDiagLength = (_boatMesh.bounds.max - _boatMesh.bounds.min).magnitude;
-		//_waterPatchCellWidth = _boatMeshDiagLength / _num_waterPatch_tiles;
+		_waterPatchCellWidth = _boatMeshDiagLength / _num_waterPatch_tiles;
 
 		_sentinelSphere =  GameObject.Find("SentinelSphere");
 
@@ -59,10 +58,8 @@ public class BoatController : MonoBehaviour {
     		Vector3 p3 = boatMesh.vertices[boatMesh.triangles[i + 2]];
 			_meshTriangleList.Add(new MeshTriangle(new Triangle(p1, p2, p3), triangleId++));
 		}
-
-		//_waterPatch.CellWidth = _boatMeshDiagLength / _num_waterPatch_tiles;
-		//_waterPatch.build(_boatMesh.);	
-	//	buildWaterpatch();
+	
+		buildWaterpatch();
 	}
 	
 	// Update is called once per frame
@@ -107,24 +104,24 @@ public class BoatController : MonoBehaviour {
 
 		if( Input.GetKeyDown(KeyCode.D))
 		{
-		//	_num_waterPatch_tiles = Mathf.Min(_num_waterPatch_tiles+2, 20);
-		//	Debug.Log(_num_waterPatch_tiles);
-			//buildWaterpatch();
+			_num_waterPatch_tiles = Mathf.Min(_num_waterPatch_tiles+2, 20);
+			Debug.Log(_num_waterPatch_tiles);
+			buildWaterpatch();
 		} else if (Input.GetKeyDown(KeyCode.A)){
-		//	_num_waterPatch_tiles = Mathf.Max(_num_waterPatch_tiles-2, 3);
-		//	Debug.Log(_num_waterPatch_tiles);
-			//buildWaterpatch();
+			_num_waterPatch_tiles = Mathf.Max(_num_waterPatch_tiles-2, 3);
+			Debug.Log(_num_waterPatch_tiles);
+			buildWaterpatch();
 		}
 		float waterPatchIncrement = 0.25f;
 		if( Input.GetKeyDown(KeyCode.W))
 		{
-		//	_waterPatchCellWidth = Mathf.Min(_waterPatchCellWidth + waterPatchIncrement, 20.0f);	
-		//	Debug.Log(_waterPatchCellWidth);
-			//buildWaterpatch();
+			_waterPatchCellWidth = Mathf.Min(_waterPatchCellWidth + waterPatchIncrement, 20.0f);	
+			Debug.Log(_waterPatchCellWidth);
+			buildWaterpatch();
 		} else if(Input.GetKeyDown(KeyCode.S)) {
-		//	Debug.Log(_waterPatchCellWidth);
-			//buildWaterpatch();
-		//	_waterPatchCellWidth = Mathf.Max(_waterPatchCellWidth - waterPatchIncrement, 1.0f);	
+			Debug.Log(_waterPatchCellWidth);
+			buildWaterpatch();
+			_waterPatchCellWidth = Mathf.Max(_waterPatchCellWidth - waterPatchIncrement, 1.0f);	
 		}
 	
 
@@ -186,13 +183,13 @@ public class BoatController : MonoBehaviour {
 		//	_num_waterPatch_tiles * 0.5f * _boatMeshDiagLength, waterPatchCenter.y,  
 		//	0);
 
-	/*	Gizmos.color = Color.blue;
+		Gizmos.color = Color.blue;
 		foreach( Vector3 v in _waterPatch_verts)
 		{
 			Gizmos.DrawWireSphere(t.TransformPoint(v), 0.025f);
 		}
 
-		for( int i = 0; i < _num_waterPatch_tiles; i++)
+		/*for( int i = 0; i < _num_waterPatch_tiles; i++)
 		{
 			for( int j = 0; j < _num_waterPatch_tiles; j++)
 		   	{
@@ -212,27 +209,25 @@ public class BoatController : MonoBehaviour {
 		if( _sentinelSphere == null)
 			return;	
 
-		//Gizmos.DrawWireSphere(t.TransformPoint(_zG) + new Vector3() + new Vector3(0,0.4f,0.0f), 0.01f);
-		//Gizmos.DrawWireSphere(_sentinelSphere.transform.position + new Vector3(0,0.4f,0.0f), 0.01f);
+		Gizmos.DrawWireSphere(t.TransformPoint(_zG) + new Vector3() + new Vector3(0,0.4f,0.0f), 0.01f);
+		Gizmos.DrawWireSphere(_sentinelSphere.transform.position + new Vector3(0,0.4f,0.0f), 0.01f);
 
-		//Vector3 zG_transformed = t.TransformPoint(_zG);
-		//int i_ = Mathf.FloorToInt((_sentinelSphere.transform.position.x - zG_transformed.x) / (_num_waterPatch_tiles * _waterPatchCellWidth));
-		//int j_ = Mathf.FloorToInt((_sentinelSphere.transform.position.z- zG_transformed.z) / (_num_waterPatch_tiles * _waterPatchCellWidth));
-		//int i_ = Mathf.FloorToInt((_sentinelSphere.transform.position.x - zG_transformed.x) / ( _waterPatchCellWidth));
-		//int j_ = Mathf.FloorToInt((_sentinelSphere.transform.position.z- zG_transformed.z) / ( _waterPatchCellWidth));
+		Vector3 zG_transformed = t.TransformPoint(_zG);
+		
+		int i_ = Mathf.FloorToInt((_sentinelSphere.transform.position.x - zG_transformed.x) / ( _waterPatchCellWidth));
+		int j_ = Mathf.FloorToInt((_sentinelSphere.transform.position.z- zG_transformed.z) / ( _waterPatchCellWidth));
 
-		/*if( (i_ >= 0 && i_ < _num_waterPatch_tiles ) && (j_ >= 0 && j_ < _num_waterPatch_tiles))
+		if( (i_ >= 0 && i_ < _num_waterPatch_tiles ) && (j_ >= 0 && j_ < _num_waterPatch_tiles))
 		{
 		Debug.Log(i_ + " / " + j_  + " - " + 
 			 (_sentinelSphere.transform.position.x - zG_transformed.x)  + " / " + (_sentinelSphere.transform.position.z - zG_transformed.z) );
-		}*/
-
+		}
 
 		// render waterPatch triangles
 
 	}
 
-/*	void buildWaterpatch() {
+	void buildWaterpatch() {
 		_waterPatch_verts.Clear();
 		_boatMeshCenter = _boatMesh.bounds.center;
 	//	_boatMeshDiagLength = (_boatMesh.bounds.max - _boatMesh.bounds.min).magnitude;
@@ -251,7 +246,7 @@ public class BoatController : MonoBehaviour {
 		}
 
 		//_waterPatchTriangles
-	}*/
+	}
 
 	void OnGUI() {
  		GUI.Label (new Rect (0,0,100,50), _debugMsg);
