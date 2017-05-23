@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WaterController : MonoBehaviour {
+public class WaterManager : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
