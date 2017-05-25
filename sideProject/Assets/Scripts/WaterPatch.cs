@@ -54,22 +54,29 @@ public class WaterPatch
 		{
 			for( int j = 0; j < _numTiles; j++)
 		   	{
-				_pointList.Add(new Vector3(_zG.x + i * incr, _center.y, _zG.z + j * incr));   
+				//_pointList.Add(new Vector3(_zG.x + i * incr, _center.y, _zG.z + j * incr));   
+				_pointList.Add(new Vector3(_zG.x + i * incr, .0f, _zG.z + j * incr));   
 	  	 	}
 		}
 	//	Debug.Log("WaterPatch::build mesh size: " + _pointList.Count + "!");
 	}
 
-	public void updateCenter(Vector3 patchCenter) {
-		_center = patchCenter;
+	public void updateCenter(Vector3 patchCenter, OceanManager om) {
+		_center.x = patchCenter.x;
+		_center.z = patchCenter.z;
 		build();
+
+		for(int i = 0; i < _pointList.Count; i++)
+		{
+			_pointList[i] = new Vector3(_pointList[i].x, om.calcPoint(_pointList[i]).y,_pointList[i].z );
+			//_pointList[i] = new Vector3(_pointList[i].x,_pointList[i].y + Random.Range(-0.01f, 0.01f),_pointList[i].z );
+			//result.y += Random.Range(-0.01f, 0.01f);
+		}
 	}
 
 	public Vector2  getCellIndicesForPoint(Vector3 testPoint)
 	{	
 		float cellWidth = getCellWidth();
-		//int i_ = Mathf.FloorToInt((_sentinelSphere.transform.position.x - zG_transformed.x) / cellWidth);
-		//int j_ = Mathf.FloorToInt((_sentinelSphere.transform.position.z- zG_transformed.z) / cellWidth);
 		return new Vector2(Mathf.FloorToInt((testPoint.x - _zG.x) / cellWidth ),
 				Mathf.FloorToInt((testPoint.z - _zG.z) / cellWidth));
 	}
@@ -82,7 +89,6 @@ public class WaterPatch
 		{
 			float xpc = (testPoint.x - _zG.x) - indices[1] * getCellWidth();
 			float zpc = (testPoint.z - _zG.z) - indices[0] * getCellWidth();
-			//return new Vector2((testPoint.x - _zG.x) - indices[1] * getCellWidth(), (testPoint.z - _zG.z) - indices[0] * getCellWidth());
 			return new Vector2(xpc, zpc);
 		}
 		return Vector2.zero;
@@ -109,7 +115,6 @@ public class WaterPatch
 	}
 
 	public void decrementNumTiles() {
-		//_numTiles = Mathf.Max(_numTiles - 2, minNumTiles);
 		if( _numTiles > minNumTiles + 2)
 		{
 			_numTiles = _numTiles - 2;

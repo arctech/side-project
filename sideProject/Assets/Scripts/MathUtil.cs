@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class MathUtil  {
 
-	public static void Test()
-	{
-		Debug.Log("Test");
+	public static int RandomSign()  {
+    	return Random.value < .5? 1 : -1;
 	}
 }

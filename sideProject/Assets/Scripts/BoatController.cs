@@ -24,12 +24,14 @@ public class BoatController : MonoBehaviour {
 
 	private Vector3 _boatMeshCenter = Vector3.zero; // boat mesh bounding box center
 
-	public GameObject _sentinelSphere = null;
+	private GameObject _sentinelSphere = null;
 	private Mesh _boatMesh = null;
 
 	private string _debugMsg = "";
 
 	private WaterPatch _waterPatch = new WaterPatch();
+
+	private OceanManager _oceanManager;
 
 		
 	// Use this for initialization
@@ -58,13 +60,15 @@ public class BoatController : MonoBehaviour {
 
 		_waterPatch.init(getCenterWorldPosition(), boatMeshDiagLength, 5);
 		_waterPatch.build();
+
+		_oceanManager = gameObject.AddComponent<OceanManager>();
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		float start = Time.realtimeSinceStartup;
 
-		_waterPatch.updateCenter(getCenterWorldPosition());
+		_waterPatch.updateCenter(getCenterWorldPosition(), _oceanManager);
 
 		float waterHeight = 0.0f;
 
@@ -229,10 +233,18 @@ public class BoatController : MonoBehaviour {
 			// + 
 			//	 (_sentinelSphere.transform.position.x - zG_transformed.x)  + " / " + (_sentinelSphere.transform.position.z - zG_transformed.z) );
 
+			// mirror coords
+			i = _waterPatch.NumTiles - i;
+			j = _waterPatch.NumTiles - j;
 			Vector3 A = _waterPatch.get(i, j);
 			Vector3 B = _waterPatch.get(i + 1, j);
 			Vector3 D = _waterPatch.get(i, j + 1);
 			Vector3 C = _waterPatch.get(i + 1, j + 1); 	
+
+		/*	A = _waterPatch.get(j, i);
+			B = _waterPatch.get(j + 1, i);
+			D = _waterPatch.get(j, i + 1);
+			C = _waterPatch.get(j + 1, i + 1); 	*/
 
 			Gizmos.color = Color.yellow;
 			if( xpc <= zpc)
