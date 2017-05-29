@@ -76,12 +76,12 @@ public class DrawingUtil  {
         #endif
     }
 
-/*	public static void DrawBoundingBoxGizmo(Bounds bounds, Color color) {
+	public static void DrawGizmoBox(Bounds bounds, Color color) {
 		//Vector3 vCenter = bounds.center;
 		//Vector3 vExtents = bounds.extents;
 		Color prevColor = Gizmos.color;
 		Gizmos.color = color;
 		Gizmos.DrawWireCube( bounds.center, bounds.extents);
 		Gizmos.color = prevColor;
-	}*/
+	}
 }

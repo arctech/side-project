@@ -41,12 +41,8 @@ public class BoatController : MonoBehaviour {
 
 		// length of diagonal of boat mesh bounding box
 		float boatMeshDiagLength = (_boatMesh.bounds.max - _boatMesh.bounds.min).magnitude;
-		//_waterPatchCellWidth = _boatMeshDiagLength / _num_waterPatch_tiles;
 
 		_sentinelSphere =  GameObject.Find("SentinelSphere");
-
-		Debug.Log(boatMesh.name);
-		Debug.Log(_sentinelSphere.name);
 
 		int triangleId = 1;
 		for (int i = 0; i < boatMesh.triangles.Length; i += 3)
@@ -70,11 +66,10 @@ public class BoatController : MonoBehaviour {
 
 		_waterPatch.updateCenter(getCenterWorldPosition(), _oceanManager);
 
-		float waterHeight = 0.0f;
-
 		_totalSubmergedCount = 0;
 		Transform t = this.transform;
 		
+		float waterHeight = 0.0f;
 	 	for(int i = 0; i < _meshTriangleList.Count; i++)
 	   	{
 			MeshTriangle mt = _meshTriangleList[i];
@@ -122,18 +117,6 @@ public class BoatController : MonoBehaviour {
 			buildWaterpatch();
 			_waterPatchCellWidth = Mathf.Max(_waterPatchCellWidth - waterPatchIncrement, 1.0f);	
 		}*/
-	
-
-	/*	int test = 0;
-		for(int i = 0; i < _meshTriangleList.Count; i++)
-		{
-			if( _meshTriangleList[i].submergedState > 0)
-			{
-				test++;
-			}
-		}
-
-		Debug.Log("Update submerged: " + _totalSubmergedCount + " / " + test);*/
 	}
 
 	void OnDrawGizmos() {
@@ -174,25 +157,10 @@ public class BoatController : MonoBehaviour {
 	   	}
 
 		Vector3 center = getCenterWorldPosition();
-		
-		/*Gizmos.color = Color.blue;
-		for( int i = 0; i < _waterPatch.NumTiles; i++)
-		{
-				for( int j = 0; j < _waterPatch.NumTiles; j++)
-				{
-					Vector3 temp = _waterPatch.get(i, j);
-					//Gizmos.DrawWireSphere(t.TransformPoint(temp), 0.025f);
-				//	Gizmos.DrawWireSphere(temp, 0.025f);
-				}
-		}*/
-
+	
 		//Debug.Log();
 		Gizmos.color = Color.red;
 		Gizmos.DrawWireSphere(new Vector3(center.x,center.y + 1, center.z), 0.025f);
-
-		// draw bounding box
-		//Vector3 span = boatMesh.bounds.max - boatMesh.bounds.min;
-		//Gizmos.DrawWireCube(waterPatchCenter, new Vector3(span.x, span.y, span.z));
 
 		// draw waterPatch wire
 		Gizmos.color = Color.blue;
@@ -217,10 +185,10 @@ public class BoatController : MonoBehaviour {
 		if( _sentinelSphere == null)
 			return;	
 
-		Gizmos.DrawWireSphere(_waterPatch.zG + new Vector3(0,0.4f,0.0f), 0.01f);
 		Gizmos.color = Color.yellow;
+		Gizmos.DrawSphere(_waterPatch.zG + new Vector3(0,0,0.0f), 0.01f);
 		Gizmos.DrawWireSphere(_sentinelSphere.transform.position + new Vector3(0,0.4f,0.0f), 0.01f);
-
+		Debug.Log(_waterPatch.zG.y);
 		Vector2 cellIndices = _waterPatch.getCellIndicesForPoint(_sentinelSphere.transform.position);
 		Vector2 cellCoordinates = _waterPatch.getCellCoordinatesForPoint(_sentinelSphere.transform.position);
 		if(( cellIndices.x >= 0 && cellIndices.x < _waterPatch.NumTiles - 1) && cellIndices.y >= 0 && cellIndices.y < _waterPatch.NumTiles - 1)
@@ -229,24 +197,13 @@ public class BoatController : MonoBehaviour {
 			int j = (int)cellIndices.y;
 			float xpc = cellCoordinates.x;
 			float zpc = cellCoordinates.y;
-			Debug.Log(i + " / " + j  + " - " );
-			// + 
-			//	 (_sentinelSphere.transform.position.x - zG_transformed.x)  + " / " + (_sentinelSphere.transform.position.z - zG_transformed.z) );
-
-			// mirror coords
-			i = _waterPatch.NumTiles - i;
-			j = _waterPatch.NumTiles - j;
+		
 			Vector3 A = _waterPatch.get(i, j);
-			Vector3 B = _waterPatch.get(i + 1, j);
-			Vector3 D = _waterPatch.get(i, j + 1);
+			Vector3 B = _waterPatch.get(i, j + 1);
 			Vector3 C = _waterPatch.get(i + 1, j + 1); 	
+			Vector3 D = _waterPatch.get(i + 1, j);
 
-		/*	A = _waterPatch.get(j, i);
-			B = _waterPatch.get(j + 1, i);
-			D = _waterPatch.get(j, i + 1);
-			C = _waterPatch.get(j + 1, i + 1); 	*/
-
-			Gizmos.color = Color.yellow;
+			Gizmos.color = Color.green;
 			if( xpc <= zpc)
 			{
 				Gizmos.DrawWireSphere(A, 0.025f);

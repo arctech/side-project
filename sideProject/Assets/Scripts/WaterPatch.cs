@@ -12,21 +12,6 @@ public class WaterPatch
 	private Vector3 _zG = Vector3.zero;	// lower left corner of waterPatchGrid
 	private Vector3 _center = Vector3.zero;	// centerpoint of grid
 		
-	public void clear() {
-		_pointList.Clear();
-	}
-
-	/*	public void setAt(int i, int j, Vector3 p) 
-		{
-			int linearIndex = i + j * _numTiles;
-			if( linearIndex >= 0 && linearIndex < _pointList.Count)
-			{
-				Debug.Log("Waterpatch::setAt - Invalid index: " + linearIndex + "!");
-				return;
-			}
-			_pointList[linearIndex] = p;
-		}*/
-
 	public void init(Vector3 center, float span, int numTiles) 
 	{
 		_center = center;
@@ -40,15 +25,13 @@ public class WaterPatch
 			return;
 		}
 	
-		clear();
-		//_boatMeshCenter = _boatMesh.bounds.center;
-		//	_boatMeshDiagLength = (_boatMesh.bounds.max - _boatMesh.bounds.min).magnitude;
-		//_waterPatchCellWidth = _boatMeshDiagLength / _num_waterPatch_tiles;
+		_pointList.Clear();
 		float incr = getCellWidth();
 
 		_zG = new Vector3(
 		_center.x - (_numTiles / 2 * incr), 
-			_center.y, 
+			//_center.y, 
+			0.0f,
 			_center.z - (_numTiles / 2 * incr));
 		for( int i = 0; i < _numTiles; i++)
 		{
@@ -58,7 +41,6 @@ public class WaterPatch
 				_pointList.Add(new Vector3(_zG.x + i * incr, .0f, _zG.z + j * incr));   
 	  	 	}
 		}
-	//	Debug.Log("WaterPatch::build mesh size: " + _pointList.Count + "!");
 	}
 
 	public void updateCenter(Vector3 patchCenter, OceanManager om) {
@@ -68,9 +50,7 @@ public class WaterPatch
 
 		for(int i = 0; i < _pointList.Count; i++)
 		{
-			_pointList[i] = new Vector3(_pointList[i].x, om.calcPoint(_pointList[i]).y,_pointList[i].z );
-			//_pointList[i] = new Vector3(_pointList[i].x,_pointList[i].y + Random.Range(-0.01f, 0.01f),_pointList[i].z );
-			//result.y += Random.Range(-0.01f, 0.01f);
+			_pointList[i] = new Vector3(_pointList[i].x,om.calcPoint(_pointList[i]).y,_pointList[i].z );
 		}
 	}
 
@@ -87,8 +67,8 @@ public class WaterPatch
 		
 		if ((indices[0] >= 0 && indices[0] < _numTiles - 1) && (indices[1] >= 0 && indices[1] < _numTiles - 1))
 		{
-			float xpc = (testPoint.x - _zG.x) - indices[1] * getCellWidth();
-			float zpc = (testPoint.z - _zG.z) - indices[0] * getCellWidth();
+			float xpc = (testPoint.x - _zG.x) - indices[0] * getCellWidth();
+			float zpc = (testPoint.z - _zG.z) - indices[1] * getCellWidth();
 			return new Vector2(xpc, zpc);
 		}
 		return Vector2.zero;
@@ -96,7 +76,8 @@ public class WaterPatch
 
 	public Vector3 get(int i, int j) 
 	{
-		int linearIndex = i + j * _numTiles;
+		int linearIndex = i * _numTiles + j;
+		//int linearIndex = j + i * _numTiles;
 		if( linearIndex >= 0 && linearIndex < _pointList.Count)
 		{
 			return _pointList[linearIndex];
