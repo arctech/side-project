@@ -33,7 +33,6 @@ public class BoatController : MonoBehaviour {
 
 	private OceanManager _oceanManager;
 
-		
 	// Use this for initialization
 	void Start () {
 		Mesh boatMesh = this.GetComponent<MeshFilter>().mesh;
@@ -188,9 +187,18 @@ public class BoatController : MonoBehaviour {
 		Gizmos.color = Color.yellow;
 		Gizmos.DrawSphere(_waterPatch.zG + new Vector3(0,0,0.0f), 0.01f);
 		Gizmos.DrawWireSphere(_sentinelSphere.transform.position + new Vector3(0,0.4f,0.0f), 0.01f);
-		Debug.Log(_waterPatch.zG.y);
-		Vector2 cellIndices = _waterPatch.getCellIndicesForPoint(_sentinelSphere.transform.position);
-		Vector2 cellCoordinates = _waterPatch.getCellCoordinatesForPoint(_sentinelSphere.transform.position);
+	
+		float distance = getDistanceToWaterpatch(_sentinelSphere.transform.position);
+		if(distance <= 0.0f)
+		{
+			Gizmos.DrawLine(_sentinelSphere.transform.position, _sentinelSphere.transform.position + new Vector3(0, (-1) * distance, 0));
+		}
+	}
+
+	private float getDistanceToWaterpatch(Vector3 point) {
+		float distance = Mathf.Infinity;
+		Vector2 cellIndices = _waterPatch.getCellIndicesForPoint(point);
+		Vector2 cellCoordinates = _waterPatch.getCellCoordinatesForPoint(point);
 		if(( cellIndices.x >= 0 && cellIndices.x < _waterPatch.NumTiles - 1) && cellIndices.y >= 0 && cellIndices.y < _waterPatch.NumTiles - 1)
 		{
 			int i = (int)cellIndices.x;
@@ -203,21 +211,20 @@ public class BoatController : MonoBehaviour {
 			Vector3 C = _waterPatch.get(i + 1, j + 1); 	
 			Vector3 D = _waterPatch.get(i + 1, j);
 
+			Vector3 B1 = B;
 			Gizmos.color = Color.green;
-			if( xpc <= zpc)
-			{
-				Gizmos.DrawWireSphere(A, 0.025f);
-				Gizmos.DrawWireSphere(B, 0.025f);
-				Gizmos.DrawWireSphere(C, 0.025f);
-			}
-			else
-			{
-				Gizmos.DrawWireSphere(A, 0.025f);
-				Gizmos.DrawWireSphere(D, 0.025f);
-				Gizmos.DrawWireSphere(C, 0.025f);
-			}
+			if( xpc > zpc) {
+				B1 = D;
+			}		
 
+			// calculate height
+			Vector3 AB = B - A;
+			Vector3 AC = C - A;
+			Vector3 cross = Vector3.Cross(AB, AC);
+			float d = Vector3.Dot(cross, A);
+			distance = point.y - ((d - cross.x * point.x - cross.z * point.z) / cross.y);
 		}
+		return distance;
 	}
 
 	private Vector3 getCenterWorldPosition() {
