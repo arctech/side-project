@@ -10,6 +10,9 @@ public class BoatController : MonoBehaviour {
 
 		// 0 vertices, 1 vertex, 2 vertices or all 3 vertices submerged;
 		public int submergedState;	
+		public float distanceToWater1 = 0.0f;	// debug only
+		public float distanceToWater2 = 0.0f;	// debug only
+		public float distanceToWater3 = 0.0f;	// debug only
 
 		public MeshTriangle(Triangle triangle, int triangleId) {
 			this.triangle = triangle;
@@ -68,17 +71,41 @@ public class BoatController : MonoBehaviour {
 		_totalSubmergedCount = 0;
 		Transform t = this.transform;
 		
-		float waterHeight = 0.0f;
-	 	for(int i = 0; i < _meshTriangleList.Count; i++)
+		//float waterHeight = 0.0f;
+	 	
+		for(int i = 0; i < _meshTriangleList.Count; i++)
 	   	{
 			MeshTriangle mt = _meshTriangleList[i];
-			mt.submergedState = 0;
 			Vector3 v1_transformed = t.TransformPoint( mt.triangle.Vertex1);
 			Vector3 v2_transformed = t.TransformPoint( mt.triangle.Vertex2);
 			Vector3 v3_transformed = t.TransformPoint( mt.triangle.Vertex3);
 
+			float distanceToWater1 = getDistanceToWaterpatch(v1_transformed);
+			float distanceToWater2 = getDistanceToWaterpatch(v2_transformed);
+			float distanceToWater3 = getDistanceToWaterpatch(v3_transformed);
+
 			int count = 0;
-			if( v1_transformed.y < waterHeight)
+			if( distanceToWater1 <= 0 )
+			{
+				count += 1;
+			}
+
+			if( distanceToWater2 <= 0 )
+			{
+				count += 1;
+			}
+
+			if( distanceToWater3 <= 0 )
+			{
+				count += 1;
+			}
+
+
+			mt.distanceToWater1 = distanceToWater1;
+			mt.distanceToWater2 = distanceToWater2;
+			mt.distanceToWater3 = distanceToWater3;
+
+		/*	if( v1_transformed.y < waterHeight)
 			{
 				count += 1;
 			}
@@ -89,12 +116,14 @@ public class BoatController : MonoBehaviour {
 			if( v3_transformed.y < waterHeight)
 			{
 				count += 1;
-			}
+			}*/
 			mt.submergedState = count;
 			if( count == 3 )
 			{
 				_totalSubmergedCount++;
 			}
+
+
 		}
 
 		_debugMsg = "BoatController - update: " + (Time.realtimeSinceStartup - start);
@@ -131,14 +160,14 @@ public class BoatController : MonoBehaviour {
 			Vector3 v2_transformed = t.TransformPoint( mt.triangle.Vertex2);
 			Vector3 v3_transformed = t.TransformPoint( mt.triangle.Vertex3);
 
-			Color col = Color.black;
+			Color col = Color.white;
 			switch( mt.submergedState)
 			{
 				case 1:
-					col = Color.yellow;
+					col = Color.green;
 					break;
 				case 2:
-					col = Color.green;
+					col = Color.yellow;
 					break;
 				case 3:
 					col = Color.red;
@@ -146,9 +175,9 @@ public class BoatController : MonoBehaviour {
 			}
 
 			//DrawingUtil.DrawText(mt.triangleId.ToString(), centroid_transformed, Gizmos.color);
-			Gizmos.DrawWireSphere(centroid_transformed, 0.005f);
 			Gizmos.color = col;
-			DrawingUtil.DrawTriangle( v1_transformed, v2_transformed, v3_transformed, col);
+			Gizmos.DrawWireSphere(centroid_transformed, 0.005f);
+			DrawingUtil.DrawTriangle( v1_transformed, v2_transformed, v3_transformed, Color.gray);
 
 			//Gizmos.DrawLine(centroid_transformed, v1_transformed );
 			//Gizmos.DrawLine(centroid_transformed, v2_transformed );
@@ -218,7 +247,7 @@ public class BoatController : MonoBehaviour {
 			}		
 
 			// calculate height
-			Vector3 AB = B - A;
+			Vector3 AB = B1 - A;
 			Vector3 AC = C - A;
 			Vector3 cross = Vector3.Cross(AB, AC);
 			float d = Vector3.Dot(cross, A);
