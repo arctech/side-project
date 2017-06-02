@@ -82,7 +82,7 @@ public class WaterPatch
 		{
 			return _pointList[linearIndex];
 		}
-		Debug.Log("Waterpatch::get - Invalid index: " + linearIndex + " vs count:"  + _pointList.Count + "!");
+	//	Debug.Log("Waterpatch::get - Invalid index: " + linearIndex + " vs count:"  + _pointList.Count + "!");
 		return Vector3.zero;
 	}
 
