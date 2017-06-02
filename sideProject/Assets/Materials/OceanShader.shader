@@ -97,8 +97,8 @@ Shader "UnityLibrary/Effects/Wireframe"
 			//fixed4 frag (g2f i) : SV_Target
 			fixed4 frag (v2g i) : SV_Target
 			{
-				return float4(i.normals.xyz, 1);
-				//return float4(1,1,1, 1);
+				//return float4(i.normals.xyz, 1);
+				return float4(1,1,1, 1);
 			}
 			ENDCG
 		}

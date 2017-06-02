@@ -10,10 +10,8 @@ public class BoatController : MonoBehaviour {
 
 		// 0 vertices, 1 vertex, 2 vertices or all 3 vertices submerged;
 		public int submergedState;	
-		public float distanceToWater1 = 0.0f;	// debug only
-		public float distanceToWater2 = 0.0f;	// debug only
-		public float distanceToWater3 = 0.0f;	// debug only
-
+		public float[] vertexDistances = new float[3];
+		public Vector3[] worldspacePositions = new Vector3[3];
 		public MeshTriangle(Triangle triangle, int triangleId) {
 			this.triangle = triangle;
 			this.triangleId = triangleId;
@@ -72,14 +70,14 @@ public class BoatController : MonoBehaviour {
 		Transform t = this.transform;
 		
 		//float waterHeight = 0.0f;
-	 	
+	 	List<int> partiallySubmergedTriangles = new List<int>();
 		for(int i = 0; i < _meshTriangleList.Count; i++)
 	   	{
 			MeshTriangle mt = _meshTriangleList[i];
 			Vector3 v1_transformed = t.TransformPoint( mt.triangle.Vertex1);
 			Vector3 v2_transformed = t.TransformPoint( mt.triangle.Vertex2);
 			Vector3 v3_transformed = t.TransformPoint( mt.triangle.Vertex3);
-
+			
 			float distanceToWater1 = getDistanceToWaterpatch(v1_transformed);
 			float distanceToWater2 = getDistanceToWaterpatch(v2_transformed);
 			float distanceToWater3 = getDistanceToWaterpatch(v3_transformed);
@@ -100,30 +98,18 @@ public class BoatController : MonoBehaviour {
 				count += 1;
 			}
 
+			mt.vertexDistances[0] = distanceToWater1;
+			mt.vertexDistances[1]  = distanceToWater2;
+			mt.vertexDistances[2]  = distanceToWater3;
 
-			mt.distanceToWater1 = distanceToWater1;
-			mt.distanceToWater2 = distanceToWater2;
-			mt.distanceToWater3 = distanceToWater3;
-
-		/*	if( v1_transformed.y < waterHeight)
-			{
-				count += 1;
-			}
-			if( v2_transformed.y < waterHeight)
-			{
-				count += 1;
-			}
-			if( v3_transformed.y < waterHeight)
-			{
-				count += 1;
-			}*/
+			mt.worldspacePositions[0] = v1_transformed;
+			mt.worldspacePositions[1] = v2_transformed;
+			mt.worldspacePositions[2] = v3_transformed;
 			mt.submergedState = count;
 			if( count == 3 )
 			{
 				_totalSubmergedCount++;
 			}
-
-
 		}
 
 		_debugMsg = "BoatController - update: " + (Time.realtimeSinceStartup - start);
@@ -156,21 +142,25 @@ public class BoatController : MonoBehaviour {
 	   	foreach( MeshTriangle mt in _meshTriangleList)
 	   	{
 			Vector3 centroid_transformed = t.TransformPoint(mt.triangle.Centroid);
-			Vector3 v1_transformed = t.TransformPoint( mt.triangle.Vertex1);
-			Vector3 v2_transformed = t.TransformPoint( mt.triangle.Vertex2);
-			Vector3 v3_transformed = t.TransformPoint( mt.triangle.Vertex3);
+			Vector3 v1_transformed = mt.worldspacePositions[0];
+			Vector3 v2_transformed = mt.worldspacePositions[1];
+			Vector3 v3_transformed = mt.worldspacePositions[2];
 
 			Color col = Color.white;
 			switch( mt.submergedState)
 			{
 				case 1:
 					col = Color.green;
+					calcWaterLine(mt);
 					break;
 				case 2:
 					col = Color.yellow;
+					calcWaterLine(mt);
 					break;
 				case 3:
 					col = Color.red;
+					break;
+				case 0:
 					break;
 			}
 
@@ -223,6 +213,40 @@ public class BoatController : MonoBehaviour {
 			Gizmos.DrawLine(_sentinelSphere.transform.position, _sentinelSphere.transform.position + new Vector3(0, (-1) * distance, 0));
 		}
 	}
+
+	private void calcWaterLine(MeshTriangle mt) {
+		int[] sortedIndices = new int[3] {0,1,2};
+
+		if (mt.vertexDistances[sortedIndices[0]] > mt.vertexDistances[sortedIndices[2]]) 
+		{
+			int temp = sortedIndices[0];
+			sortedIndices[0] = sortedIndices[2];
+			sortedIndices[2] = temp;
+		}
+		if(mt.vertexDistances[sortedIndices[0]] > mt.vertexDistances[sortedIndices[1]]) 
+		{
+			int temp = sortedIndices[0];
+			sortedIndices[0] = sortedIndices[1];
+			sortedIndices[1] = temp;
+		}
+		if(mt.vertexDistances[sortedIndices[1]] > mt.vertexDistances[sortedIndices[2]]) 
+		{
+			int temp = sortedIndices[1];
+			sortedIndices[1] = sortedIndices[2];
+			sortedIndices[2] = temp;
+		}
+		
+		Gizmos.color = Color.blue;
+		// case 1:
+		if( mt.vertexDistances[sortedIndices[0]] <= 0 && mt.vertexDistances[sortedIndices[1]] <= 0 && mt.vertexDistances[sortedIndices[2]] >= 0) 
+		{
+			Gizmos.DrawLine(mt.worldspacePositions[0], new Vector3());
+		}
+		else if( mt.vertexDistances[sortedIndices[0]] <= 0 &&  mt.vertexDistances[sortedIndices[1]] >= 0 &&  mt.vertexDistances[sortedIndices[2]] >= 0) {
+			Gizmos.DrawLine(mt.worldspacePositions[0], new Vector3());
+		}
+	}
+
 
 	private float getDistanceToWaterpatch(Vector3 point) {
 		float distance = Mathf.Infinity;
