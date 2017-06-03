@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class DrawingUtil  {
 
+    public static Color LightseaGreen = new Color(0,250,154);
+
+
+
     public static void DrawText(GUISkin guiSkin, string text, Vector3 position, Color? color = null, int fontSize = 0, float yOffset = 0)
     {
 #if UNITY_EDITOR
@@ -84,4 +88,6 @@ public class DrawingUtil  {
 		Gizmos.DrawWireCube( bounds.center, bounds.extents);
 		Gizmos.color = prevColor;
 	}
+
+
 }

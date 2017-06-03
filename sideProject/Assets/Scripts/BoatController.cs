@@ -19,6 +19,7 @@ public class BoatController : MonoBehaviour {
 		}
 	}
 
+	public float WaterpatchScaleFactor = 1.5f;
 	private List<MeshTriangle> _meshTriangleList = new List<MeshTriangle>();
 
 	private int _totalSubmergedCount = 0;	
@@ -54,7 +55,7 @@ public class BoatController : MonoBehaviour {
 		}
 		_boatMeshCenter = _boatMesh.bounds.center;
 
-		_waterPatch.init(getCenterWorldPosition(), boatMeshDiagLength, 5);
+		_waterPatch.init(getCenterWorldPosition(), WaterpatchScaleFactor * boatMeshDiagLength, 5);
 		_waterPatch.build();
 
 		_oceanManager = gameObject.AddComponent<OceanManager>();
@@ -151,23 +152,29 @@ public class BoatController : MonoBehaviour {
 			{
 				case 1:
 					col = Color.green;
+					Gizmos.color = col;
+					Gizmos.DrawWireSphere(centroid_transformed, 0.005f);
 					calcWaterLine(mt);
 					break;
 				case 2:
 					col = Color.yellow;
+					Gizmos.color = col;
+					Gizmos.DrawWireSphere(centroid_transformed, 0.005f);
 					calcWaterLine(mt);
 					break;
 				case 3:
 					col = Color.red;
+					Gizmos.color = col;
+					Gizmos.DrawWireSphere(centroid_transformed, 0.005f);
 					break;
 				case 0:
 					break;
 			}
 
 			//DrawingUtil.DrawText(mt.triangleId.ToString(), centroid_transformed, Gizmos.color);
-			Gizmos.color = col;
-			Gizmos.DrawWireSphere(centroid_transformed, 0.005f);
-			DrawingUtil.DrawTriangle( v1_transformed, v2_transformed, v3_transformed, Color.gray);
+		//	Gizmos.color = col;
+		//	Gizmos.DrawWireSphere(centroid_transformed, 0.005f);
+			//DrawingUtil.DrawTriangle( v1_transformed, v2_transformed, v3_transformed, Color.gray);
 
 			//Gizmos.DrawLine(centroid_transformed, v1_transformed );
 			//Gizmos.DrawLine(centroid_transformed, v2_transformed );
@@ -235,15 +242,54 @@ public class BoatController : MonoBehaviour {
 			sortedIndices[1] = sortedIndices[2];
 			sortedIndices[2] = temp;
 		}
-		
-		Gizmos.color = Color.blue;
-		// case 1:
-		if( mt.vertexDistances[sortedIndices[0]] <= 0 && mt.vertexDistances[sortedIndices[1]] <= 0 && mt.vertexDistances[sortedIndices[2]] >= 0) 
+
+		if( (mt.vertexDistances[sortedIndices[2]] >= mt.vertexDistances[sortedIndices[1]] ) && mt.vertexDistances[sortedIndices[1]] >= mt.vertexDistances[sortedIndices[0]] )
 		{
-			Gizmos.DrawLine(mt.worldspacePositions[0], new Vector3());
+
 		}
-		else if( mt.vertexDistances[sortedIndices[0]] <= 0 &&  mt.vertexDistances[sortedIndices[1]] >= 0 &&  mt.vertexDistances[sortedIndices[2]] >= 0) {
-			Gizmos.DrawLine(mt.worldspacePositions[0], new Vector3());
+		else
+		{
+			Debug.Log("Sorting error!!: " + mt.vertexDistances[sortedIndices[0]] + " / " + mt.vertexDistances[sortedIndices[1]] + " / " + mt.vertexDistances[sortedIndices[2]]);
+		}
+					
+		Vector3 L = mt.worldspacePositions[sortedIndices[0]];
+		Vector3 M = mt.worldspacePositions[sortedIndices[1]];
+		Vector3 H = mt.worldspacePositions[sortedIndices[2]];
+		
+		Gizmos.color = DrawingUtil.LightseaGreen;
+		if(mt.vertexDistances[0] == Mathf.Infinity || mt.vertexDistances[1] == Mathf.Infinity || mt.vertexDistances[2] == Mathf.Infinity) {
+			Gizmos.color = Color.yellow;
+		}
+		// case 1:
+		if( (mt.vertexDistances[sortedIndices[0]] <= 0 && mt.vertexDistances[sortedIndices[1]] <= 0) && mt.vertexDistances[sortedIndices[2]] >= 0) 
+		{
+			float tm = -mt.vertexDistances[sortedIndices[1]] / (mt.vertexDistances[sortedIndices[2]] - mt.vertexDistances[sortedIndices[1]]);
+			float tl = -mt.vertexDistances[sortedIndices[0]] / (mt.vertexDistances[sortedIndices[2]] - mt.vertexDistances[sortedIndices[0]]);
+
+			Vector3 MH = H - M;
+			Vector3 LH = H - L;
+
+			Vector3 IM = M + tm * MH;
+			Vector3 IL = L + tl * LH;
+
+			Gizmos.DrawLine(IM, IL);
+			//Gizmos.DrawWireSphere(IM, 0.01f);
+			//Gizmos.DrawWireSphere(IL, 0.01f);
+		}
+		// case 2:
+		if( (mt.vertexDistances[sortedIndices[0]] <= 0 &&  mt.vertexDistances[sortedIndices[1]] >= 0 ) && mt.vertexDistances[sortedIndices[2]] >= 0) {
+			float tm = -mt.vertexDistances[sortedIndices[0]] / (mt.vertexDistances[sortedIndices[1]] - mt.vertexDistances[sortedIndices[0]]);
+			float tl = -mt.vertexDistances[sortedIndices[0]] / (mt.vertexDistances[sortedIndices[2]] - mt.vertexDistances[sortedIndices[0]]);
+
+			Vector3 LM = M - L;
+			Vector3 LH = H - L;
+
+			Vector3 IM = L + tm * LM;
+			Vector3 IL = L + tl * LH;
+
+			Gizmos.DrawLine(IM, IL);
+			//Gizmos.DrawWireSphere(IM, 0.01f);
+			//Gizmos.DrawWireSphere(IL, 0.01f);
 		}
 	}
 
@@ -275,6 +321,10 @@ public class BoatController : MonoBehaviour {
 			Vector3 AC = C - A;
 			Vector3 cross = Vector3.Cross(AB, AC);
 			float d = Vector3.Dot(cross, A);
+			if(Mathf.Approximately(cross.y, 0))
+			{
+				return 0;
+			}
 			distance = point.y - ((d - cross.x * point.x - cross.z * point.z) / cross.y);
 		}
 		return distance;
