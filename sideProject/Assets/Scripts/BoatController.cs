@@ -2,11 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/**
+* Implementation follows: http://www.gamasutra.com/view/news/237528/Water_interaction_model_for_boats_in_video_games.php
+ */
 public class BoatController : MonoBehaviour {
 
 	class MeshTriangle {
 		public Triangle triangle;
 		public int triangleId;
+
+		public Transform _transform;
 
 		// 0 vertices, 1 vertex, 2 vertices or all 3 vertices submerged;
 		public int submergedState;	
@@ -18,6 +23,8 @@ public class BoatController : MonoBehaviour {
 			this.submergedState = 0;
 		}
 	}
+
+	public bool ShowDebug = true;
 
 	public float WaterpatchScaleFactor = 1.5f;
 	private List<MeshTriangle> _meshTriangleList = new List<MeshTriangle>();
@@ -35,6 +42,8 @@ public class BoatController : MonoBehaviour {
 
 	private OceanManager _oceanManager;
 
+	private List<Triangle> _submergedTriangles = new List<Triangle>();
+	private List<Vector3> _waterLinePoints = new List<Vector3>();
 	// Use this for initialization
 	void Start () {
 		Mesh boatMesh = this.GetComponent<MeshFilter>().mesh;
@@ -67,9 +76,11 @@ public class BoatController : MonoBehaviour {
 
 		_waterPatch.updateCenter(getCenterWorldPosition(), _oceanManager);
 
+		_submergedTriangles.Clear();
+		_waterLinePoints.Clear();
 		_totalSubmergedCount = 0;
 		Transform t = this.transform;
-		
+				
 		//float waterHeight = 0.0f;
 	 	List<int> partiallySubmergedTriangles = new List<int>();
 		for(int i = 0; i < _meshTriangleList.Count; i++)
@@ -111,6 +122,21 @@ public class BoatController : MonoBehaviour {
 			{
 				_totalSubmergedCount++;
 			}
+
+			mt._transform = t;
+			switch( count)
+			{
+				case 3:
+					_submergedTriangles.Add(new Triangle(v1_transformed, v2_transformed, v3_transformed));
+					break;
+				case 2:
+				case 1:
+					calcWaterLine(mt, _submergedTriangles, _waterLinePoints);
+					break;
+				case 0:
+				default:
+					break;
+			}	
 		}
 
 		_debugMsg = "BoatController - update: " + (Time.realtimeSinceStartup - start);
@@ -135,55 +161,28 @@ public class BoatController : MonoBehaviour {
 	}
 
 	void OnDrawGizmos() {
+		if(! ShowDebug)
+		{
+			return;
+		}
+
 		Gizmos.color = Color.yellow;
-       	// Gizmos.DrawSphere (transform.position, 1);
 	   	Transform t = this.transform;
 	   	Matrix4x4 m = this.transform.localToWorldMatrix;
 
-	   	foreach( MeshTriangle mt in _meshTriangleList)
-	   	{
-			Vector3 centroid_transformed = t.TransformPoint(mt.triangle.Centroid);
-			Vector3 v1_transformed = mt.worldspacePositions[0];
-			Vector3 v2_transformed = mt.worldspacePositions[1];
-			Vector3 v3_transformed = mt.worldspacePositions[2];
+		foreach( Triangle tri in _submergedTriangles)
+		{
+			GLUtil.RenderTriangle(t, tri.Vertex1, tri.Vertex2, tri.Vertex3, DrawingUtil.LimeGreen);
+		}
 
-			Color col = Color.white;
-			switch( mt.submergedState)
-			{
-				case 1:
-					col = Color.green;
-					Gizmos.color = col;
-					Gizmos.DrawWireSphere(centroid_transformed, 0.005f);
-					calcWaterLine(mt);
-					break;
-				case 2:
-					col = Color.yellow;
-					Gizmos.color = col;
-					Gizmos.DrawWireSphere(centroid_transformed, 0.005f);
-					calcWaterLine(mt);
-					break;
-				case 3:
-					col = Color.red;
-					Gizmos.color = col;
-					Gizmos.DrawWireSphere(centroid_transformed, 0.005f);
-					break;
-				case 0:
-					break;
-			}
-
-			//DrawingUtil.DrawText(mt.triangleId.ToString(), centroid_transformed, Gizmos.color);
-		//	Gizmos.color = col;
-		//	Gizmos.DrawWireSphere(centroid_transformed, 0.005f);
-			//DrawingUtil.DrawTriangle( v1_transformed, v2_transformed, v3_transformed, Color.gray);
-
-			//Gizmos.DrawLine(centroid_transformed, v1_transformed );
-			//Gizmos.DrawLine(centroid_transformed, v2_transformed );
-			//Gizmos.DrawLine(centroid_transformed, v3_transformed );
-	   	}
+		Gizmos.color = DrawingUtil.Cyan;
+		for(int i = 0; i < _waterLinePoints.Count-1; i++) 
+		{
+			Gizmos.DrawLine(_waterLinePoints[i], _waterLinePoints[i+1]);
+		}
 
 		Vector3 center = getCenterWorldPosition();
 	
-		//Debug.Log();
 		Gizmos.color = Color.red;
 		Gizmos.DrawWireSphere(new Vector3(center.x,center.y + 1, center.z), 0.025f);
 
@@ -221,7 +220,7 @@ public class BoatController : MonoBehaviour {
 		}
 	}
 
-	private void calcWaterLine(MeshTriangle mt) {
+	private void calcWaterLine(MeshTriangle mt, List<Triangle> triangleList, List<Vector3> waterLinePoints ) {
 		int[] sortedIndices = new int[3] {0,1,2};
 
 		if (mt.vertexDistances[sortedIndices[0]] > mt.vertexDistances[sortedIndices[2]]) 
@@ -243,23 +242,10 @@ public class BoatController : MonoBehaviour {
 			sortedIndices[2] = temp;
 		}
 
-		if( (mt.vertexDistances[sortedIndices[2]] >= mt.vertexDistances[sortedIndices[1]] ) && mt.vertexDistances[sortedIndices[1]] >= mt.vertexDistances[sortedIndices[0]] )
-		{
-
-		}
-		else
-		{
-			Debug.Log("Sorting error!!: " + mt.vertexDistances[sortedIndices[0]] + " / " + mt.vertexDistances[sortedIndices[1]] + " / " + mt.vertexDistances[sortedIndices[2]]);
-		}
-					
 		Vector3 L = mt.worldspacePositions[sortedIndices[0]];
 		Vector3 M = mt.worldspacePositions[sortedIndices[1]];
 		Vector3 H = mt.worldspacePositions[sortedIndices[2]];
 		
-		Gizmos.color = DrawingUtil.LightseaGreen;
-		if(mt.vertexDistances[0] == Mathf.Infinity || mt.vertexDistances[1] == Mathf.Infinity || mt.vertexDistances[2] == Mathf.Infinity) {
-			Gizmos.color = Color.yellow;
-		}
 		// case 1:
 		if( (mt.vertexDistances[sortedIndices[0]] <= 0 && mt.vertexDistances[sortedIndices[1]] <= 0) && mt.vertexDistances[sortedIndices[2]] >= 0) 
 		{
@@ -272,12 +258,14 @@ public class BoatController : MonoBehaviour {
 			Vector3 IM = M + tm * MH;
 			Vector3 IL = L + tl * LH;
 
-			Gizmos.DrawLine(IM, IL);
-			//Gizmos.DrawWireSphere(IM, 0.01f);
-			//Gizmos.DrawWireSphere(IL, 0.01f);
+			triangleList.Add(new Triangle(IM,M,L));
+			triangleList.Add(new Triangle(IL,IM, L));
+
+			waterLinePoints.Add(IM);
+			waterLinePoints.Add(IL);
 		}
 		// case 2:
-		if( (mt.vertexDistances[sortedIndices[0]] <= 0 &&  mt.vertexDistances[sortedIndices[1]] >= 0 ) && mt.vertexDistances[sortedIndices[2]] >= 0) {
+		if( (mt.vertexDistances[sortedIndices[0]] <= 0 &&  mt.vertexDistances[sortedIndices[1]] >= 0) && mt.vertexDistances[sortedIndices[2]] >= 0) {
 			float tm = -mt.vertexDistances[sortedIndices[0]] / (mt.vertexDistances[sortedIndices[1]] - mt.vertexDistances[sortedIndices[0]]);
 			float tl = -mt.vertexDistances[sortedIndices[0]] / (mt.vertexDistances[sortedIndices[2]] - mt.vertexDistances[sortedIndices[0]]);
 
@@ -287,12 +275,12 @@ public class BoatController : MonoBehaviour {
 			Vector3 IM = L + tm * LM;
 			Vector3 IL = L + tl * LH;
 
-			Gizmos.DrawLine(IM, IL);
-			//Gizmos.DrawWireSphere(IM, 0.01f);
-			//Gizmos.DrawWireSphere(IL, 0.01f);
+			triangleList.Add(new Triangle(L,IL, IM));
+			
+			waterLinePoints.Add(IM);
+			waterLinePoints.Add(IL);
 		}
 	}
-
 
 	private float getDistanceToWaterpatch(Vector3 point) {
 		float distance = Mathf.Infinity;

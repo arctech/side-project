@@ -31,7 +31,7 @@ public class GLUtil : MonoBehaviour
     }
 
     // Will be called after all regular rendering is done
-    public void OnRenderObject()
+ /*   public void OnRenderObject()
     {
         CreateLineMaterial();
         // Apply the line material
@@ -55,6 +55,29 @@ public class GLUtil : MonoBehaviour
             // Another vertex at edge of circle
             GL.Vertex3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0);
         }
+        GL.End();
+        GL.PopMatrix();
+    } */
+
+     //void OnPostRender() {
+     public static void RenderTriangle(Transform t, Vector3 v1, Vector3 v2, Vector3 v3, Color color) {
+        if (!lineMaterial) {
+          //  Debug.LogError("Please Assign a material on the inspector");
+          CreateLineMaterial();
+          //return;
+        }
+        GL.PushMatrix();
+        
+        lineMaterial.SetPass(0);
+        //GL.MultMatrix(t.localToWorldMatrix);
+        GL.MultMatrix(Matrix4x4.identity);
+      //  GL.LoadProjectionMatrix(Camera.main.projectionMatrix);
+      // GL.MultMatrix(Camera.main.worldToCameraMatrix);
+        GL.Begin(GL.TRIANGLES);
+        GL.Color(color);
+        GL.Vertex3(v1.x, v1.y, v1.z);
+        GL.Vertex3(v2.x, v2.y, v2.z);
+        GL.Vertex3(v3.x, v3.y, v3.z);
         GL.End();
         GL.PopMatrix();
     }

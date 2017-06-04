@@ -5,6 +5,8 @@ using UnityEngine;
 public class DrawingUtil  {
 
     public static Color LightseaGreen = new Color(0,250,154);
+    public static Color Cyan = new Color(0,255,255);
+    public static Color LimeGreen = new Color(0,255,0);
 
 
 
