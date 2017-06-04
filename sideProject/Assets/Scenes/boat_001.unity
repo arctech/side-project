@@ -218,43 +218,43 @@ Prefab:
       objectReference: {fileID: 2100000, guid: a0bf237d41fdfd740b27126037d49ec0, type: 2}
     - target: {fileID: 400002, guid: 684cd6b35ce66154993dcfffd7b89411, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 4.423706
+      value: 4.585
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 684cd6b35ce66154993dcfffd7b89411, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.2289869
+      value: -0.01458865
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 684cd6b35ce66154993dcfffd7b89411, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.14686571
+      value: -0.0884012
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 684cd6b35ce66154993dcfffd7b89411, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.12779142
+      value: -0.04640691
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 684cd6b35ce66154993dcfffd7b89411, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.9537635
+      value: 0.9948964
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 684cd6b35ce66154993dcfffd7b89411, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.2115532
+      value: 0.71
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 684cd6b35ce66154993dcfffd7b89411, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.112187386
+      value: -0.022
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 684cd6b35ce66154993dcfffd7b89411, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 23.532001
+      value: -2.134
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 684cd6b35ce66154993dcfffd7b89411, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -21.678001
+      value: -10.059
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 684cd6b35ce66154993dcfffd7b89411, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: -19.830002
+      value: -5.1530004
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 684cd6b35ce66154993dcfffd7b89411, type: 3}
@@ -291,7 +291,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowDebug: 1
   WaterpatchScaleFactor: 1.5
-  _waterMeshDebug: {fileID: 0}
 --- !u!23 &750683759
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -655,7 +654,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowDebug: 1
   WaterpatchScaleFactor: 1.5
-  _waterMeshDebug: {fileID: 0}
 --- !u!23 &1320907932
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -852,7 +850,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowDebug: 1
   WaterpatchScaleFactor: 1.5
-  _waterMeshDebug: {fileID: 0}
 --- !u!1 &1912669760
 GameObject:
   m_ObjectHideFlags: 0
@@ -1031,4 +1028,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowDebug: 1
   WaterpatchScaleFactor: 1.5
-  _waterMeshDebug: {fileID: 0}

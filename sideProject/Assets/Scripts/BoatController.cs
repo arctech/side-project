@@ -43,7 +43,19 @@ public class BoatController : MonoBehaviour {
 	private OceanManager _oceanManager;
 
 	private List<Triangle> _submergedTriangles = new List<Triangle>();
-	private List<Vector3> _waterLinePoints = new List<Vector3>();
+	private List<WaterlinePair> _waterLinePoints = new List<WaterlinePair>();
+
+
+	class WaterlinePair {
+		public Vector3 p1;
+		public Vector3 p2;
+
+		public WaterlinePair(Vector3 v1, Vector3 v2) {
+			p1 = v1;
+			p2 = v2;
+		}
+	}
+
 	// Use this for initialization
 	void Start () {
 		Mesh boatMesh = this.GetComponent<MeshFilter>().mesh;
@@ -160,67 +172,7 @@ public class BoatController : MonoBehaviour {
 		}*/
 	}
 
-	void OnDrawGizmos() {
-		if(! ShowDebug)
-		{
-			return;
-		}
-
-		Gizmos.color = Color.yellow;
-	   	Transform t = this.transform;
-	   	Matrix4x4 m = this.transform.localToWorldMatrix;
-
-		foreach( Triangle tri in _submergedTriangles)
-		{
-			GLUtil.RenderTriangle(t, tri.Vertex1, tri.Vertex2, tri.Vertex3, DrawingUtil.LimeGreen);
-		}
-
-		Gizmos.color = DrawingUtil.Cyan;
-		for(int i = 0; i < _waterLinePoints.Count-1; i++) 
-		{
-			Gizmos.DrawLine(_waterLinePoints[i], _waterLinePoints[i+1]);
-		}
-
-		Vector3 center = getCenterWorldPosition();
-	
-		Gizmos.color = Color.red;
-		Gizmos.DrawWireSphere(new Vector3(center.x,center.y + 1, center.z), 0.025f);
-
-		// draw waterPatch wire
-		Gizmos.color = Color.blue;
-		for( int i = 0; i < _waterPatch.NumTiles - 1; i++)
-		{
-			for( int j = 0; j < _waterPatch.NumTiles - 1; j++)
-			{
-				Vector3 A = _waterPatch.get(i, j);
-				Vector3 B = _waterPatch.get(i + 1, j);
-				Vector3 D = _waterPatch.get(i, j + 1);
-				Vector3 C = _waterPatch.get(i + 1, j + 1);
-
-				Gizmos.DrawLine(A,B);
-				Gizmos.DrawLine(B,C);
-				Gizmos.DrawLine(C,D);
-				Gizmos.DrawLine(A,D);
-				Gizmos.DrawLine(A,C);
-			}
-		}
-
-		// test coordinates
-		if( _sentinelSphere == null)
-			return;	
-
-		Gizmos.color = Color.yellow;
-		Gizmos.DrawSphere(_waterPatch.zG + new Vector3(0,0,0.0f), 0.01f);
-		Gizmos.DrawWireSphere(_sentinelSphere.transform.position + new Vector3(0,0.4f,0.0f), 0.01f);
-	
-		float distance = getDistanceToWaterpatch(_sentinelSphere.transform.position);
-		if(distance <= 0.0f)
-		{
-			Gizmos.DrawLine(_sentinelSphere.transform.position, _sentinelSphere.transform.position + new Vector3(0, (-1) * distance, 0));
-		}
-	}
-
-	private void calcWaterLine(MeshTriangle mt, List<Triangle> triangleList, List<Vector3> waterLinePoints ) {
+	private void calcWaterLine(MeshTriangle mt, List<Triangle> triangleList, List<WaterlinePair> waterLinePoints ) {
 		int[] sortedIndices = new int[3] {0,1,2};
 
 		if (mt.vertexDistances[sortedIndices[0]] > mt.vertexDistances[sortedIndices[2]]) 
@@ -261,8 +213,7 @@ public class BoatController : MonoBehaviour {
 			triangleList.Add(new Triangle(IM,M,L));
 			triangleList.Add(new Triangle(IL,IM, L));
 
-			waterLinePoints.Add(IM);
-			waterLinePoints.Add(IL);
+			waterLinePoints.Add(new WaterlinePair(IM, IL));
 		}
 		// case 2:
 		if( (mt.vertexDistances[sortedIndices[0]] <= 0 &&  mt.vertexDistances[sortedIndices[1]] >= 0) && mt.vertexDistances[sortedIndices[2]] >= 0) {
@@ -277,8 +228,7 @@ public class BoatController : MonoBehaviour {
 
 			triangleList.Add(new Triangle(L,IL, IM));
 			
-			waterLinePoints.Add(IM);
-			waterLinePoints.Add(IL);
+			waterLinePoints.Add(new WaterlinePair(IM, IL));
 		}
 	}
 
@@ -316,6 +266,65 @@ public class BoatController : MonoBehaviour {
 			distance = point.y - ((d - cross.x * point.x - cross.z * point.z) / cross.y);
 		}
 		return distance;
+	}
+
+	void OnDrawGizmos() {
+		if(! ShowDebug)
+		{
+			return;
+		}
+
+		Gizmos.color = Color.yellow;
+	   	Transform t = this.transform;
+	   	Matrix4x4 m = this.transform.localToWorldMatrix;
+
+		foreach( Triangle tri in _submergedTriangles)
+		{
+			GLUtil.RenderTriangle(t, tri.Vertex1, tri.Vertex2, tri.Vertex3, DrawingUtil.LimeGreen);
+		}
+
+		Gizmos.color = DrawingUtil.Cyan;
+		foreach(WaterlinePair pair in _waterLinePoints) {
+			Gizmos.DrawLine(pair.p1, pair.p2);
+		}
+		
+		Vector3 center = getCenterWorldPosition();
+	
+		Gizmos.color = Color.red;
+		Gizmos.DrawWireSphere(new Vector3(center.x,center.y + 1, center.z), 0.025f);
+
+		// draw waterPatch wire
+		Gizmos.color = Color.blue;
+		for( int i = 0; i < _waterPatch.NumTiles - 1; i++)
+		{
+			for( int j = 0; j < _waterPatch.NumTiles - 1; j++)
+			{
+				Vector3 A = _waterPatch.get(i, j);
+				Vector3 B = _waterPatch.get(i + 1, j);
+				Vector3 D = _waterPatch.get(i, j + 1);
+				Vector3 C = _waterPatch.get(i + 1, j + 1);
+
+				Gizmos.DrawLine(A,B);
+				Gizmos.DrawLine(B,C);
+				Gizmos.DrawLine(C,D);
+				Gizmos.DrawLine(A,D);
+				Gizmos.DrawLine(A,C);
+			}
+		}
+
+		// test coordinates
+		if( _sentinelSphere == null)
+			return;	
+
+		Gizmos.color = Color.yellow;
+		Gizmos.DrawSphere(_waterPatch.zG + new Vector3(0,0,0.0f), 0.01f);
+		Gizmos.DrawWireSphere(_sentinelSphere.transform.position + new Vector3(0,0.4f,0.0f), 0.01f);
+	
+		float distance = getDistanceToWaterpatch(_sentinelSphere.transform.position);
+		if(distance <= 0.0f)
+		{
+			Gizmos.DrawLine(_sentinelSphere.transform.position, _sentinelSphere.transform.position + new Vector3(0, (-1) * distance, 0));
+		}
 	}
 
 	private Vector3 getCenterWorldPosition() {
