@@ -10,17 +10,17 @@ public class BoatController : MonoBehaviour {
 	class MeshTriangle {
 		public Triangle triangle;
 		public int triangleId;
-
-		public Transform _transform;
+		public Vector3 normal;
 
 		// 0 vertices, 1 vertex, 2 vertices or all 3 vertices submerged;
 		public int submergedState;	
 		public float[] vertexDistances = new float[3];
 		public Vector3[] worldspacePositions = new Vector3[3];
-		public MeshTriangle(Triangle triangle, int triangleId) {
+		public MeshTriangle(Triangle triangle, int triangleId, Vector3 normal) {
 			this.triangle = triangle;
 			this.triangleId = triangleId;
 			this.submergedState = 0;
+			this.normal = normal;
 		}
 	}
 
@@ -28,8 +28,6 @@ public class BoatController : MonoBehaviour {
 
 	public float WaterpatchScaleFactor = 1.5f;
 	private List<MeshTriangle> _meshTriangleList = new List<MeshTriangle>();
-
-	private int _totalSubmergedCount = 0;	
 
 	private Vector3 _boatMeshCenter = Vector3.zero; // boat mesh bounding box center
 
@@ -44,7 +42,23 @@ public class BoatController : MonoBehaviour {
 
 	private List<Triangle> _submergedTriangles = new List<Triangle>();
 	private List<WaterlinePair> _waterLinePoints = new List<WaterlinePair>();
+	private List<DebugInfo> _debugInfoList = new List<DebugInfo>();
 
+	private Rigidbody _rigidBody;
+	public float Rho = 1000;
+
+	class DebugInfo {
+		public Vector3 _normal;
+		public Vector3 _pointOfApplication;
+		public Vector3 _force;
+
+		public DebugInfo(Vector3 normal, Vector3 poa, Vector3 force)
+		{
+			this._normal = normal;
+			this._pointOfApplication = poa;
+			this._force = force;
+		}
+	}
 
 	class WaterlinePair {
 		public Vector3 p1;
@@ -58,6 +72,9 @@ public class BoatController : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		_rigidBody = this.GetComponent<Rigidbody>();
+		
+
 		Mesh boatMesh = this.GetComponent<MeshFilter>().mesh;
 		_boatMesh = this.GetComponent<MeshFilter>().mesh;
 
@@ -72,7 +89,9 @@ public class BoatController : MonoBehaviour {
     		Vector3 p1 = boatMesh.vertices[boatMesh.triangles[i + 0]];
     		Vector3 p2 = boatMesh.vertices[boatMesh.triangles[i + 1]];
     		Vector3 p3 = boatMesh.vertices[boatMesh.triangles[i + 2]];
-			_meshTriangleList.Add(new MeshTriangle(new Triangle(p1, p2, p3), triangleId++));
+			Vector3 AB = p2 - p1;
+			Vector3 CB = p3 - p1;
+			_meshTriangleList.Add(new MeshTriangle(new Triangle(p1, p2, p3), triangleId++, Vector3.Cross(AB, CB)));
 		}
 		_boatMeshCenter = _boatMesh.bounds.center;
 
@@ -90,10 +109,10 @@ public class BoatController : MonoBehaviour {
 
 		_submergedTriangles.Clear();
 		_waterLinePoints.Clear();
-		_totalSubmergedCount = 0;
+		_debugInfoList.Clear();
+
 		Transform t = this.transform;
 				
-		//float waterHeight = 0.0f;
 	 	List<int> partiallySubmergedTriangles = new List<int>();
 		for(int i = 0; i < _meshTriangleList.Count; i++)
 	   	{
@@ -130,16 +149,12 @@ public class BoatController : MonoBehaviour {
 			mt.worldspacePositions[1] = v2_transformed;
 			mt.worldspacePositions[2] = v3_transformed;
 			mt.submergedState = count;
-			if( count == 3 )
-			{
-				_totalSubmergedCount++;
-			}
-
-			mt._transform = t;
+		
+			//mt._transform = t;
 			switch( count)
 			{
 				case 3:
-					_submergedTriangles.Add(new Triangle(v1_transformed, v2_transformed, v3_transformed));
+			//		_submergedTriangles.Add(new Triangle(v1_transformed, v2_transformed, v3_transformed));
 					break;
 				case 2:
 				case 1:
@@ -149,9 +164,27 @@ public class BoatController : MonoBehaviour {
 				default:
 					break;
 			}	
+			
+			// calc normals
+			// calc force
+			// calc point of application
+
+			//_rigidBody.AddForceAtPosition(new Vector3(0, 1, 0), new Vector3(), ForceMode.Force);
 		}
 
 		_debugMsg = "BoatController - update: " + (Time.realtimeSinceStartup - start);
+
+		foreach( Triangle tri in _submergedTriangles)
+		{
+			Vector3 AB = tri.Vertex2 - tri.Vertex1;
+			Vector3 CB = tri.Vertex3 - tri.Vertex1;
+			_debugInfoList.Add(new DebugInfo(Vector3.Cross(AB, CB), tri.Centroid, new Vector3()));
+
+			if( _rigidBody != null) {
+				// F  = -rho * g * h_center * normal;
+			//	_rigidBody.AddForceAtPosition(new Vector3(0, 20, 0), tri.Centroid, ForceMode.Force);
+			}
+		}
 
 		if( Input.GetKeyDown(KeyCode.D))
 		{
@@ -210,8 +243,8 @@ public class BoatController : MonoBehaviour {
 			Vector3 IM = M + tm * MH;
 			Vector3 IL = L + tl * LH;
 
-			triangleList.Add(new Triangle(IM,M,L));
-			triangleList.Add(new Triangle(IL,IM, L));
+	//		triangleList.Add(new Triangle(IM,M,L));
+	//		triangleList.Add(new Triangle(IL,IM, L));
 
 			waterLinePoints.Add(new WaterlinePair(IM, IL));
 		}
@@ -224,11 +257,13 @@ public class BoatController : MonoBehaviour {
 			Vector3 LH = H - L;
 
 			Vector3 IM = L + tm * LM;
-			Vector3 IL = L + tl * LH;
+			Vector3 IH = L + tl * LH;
 
-			triangleList.Add(new Triangle(L,IL, IM));
+			//triangleList.Add(new Triangle(L,IH, IM));
+			triangleList.Add(new Triangle(IM, IH, L));
+			//triangleList.Add(new Triangle(L, IM, IL));
 			
-			waterLinePoints.Add(new WaterlinePair(IM, IL));
+			waterLinePoints.Add(new WaterlinePair(IM, IH));
 		}
 	}
 
@@ -274,18 +309,32 @@ public class BoatController : MonoBehaviour {
 			return;
 		}
 
-		Gizmos.color = Color.yellow;
-	   	Transform t = this.transform;
+		Transform t = this.transform;
 	   	Matrix4x4 m = this.transform.localToWorldMatrix;
+
+		foreach(MeshTriangle mt in _meshTriangleList) 
+		{
+			Gizmos.color = Color.green;
+			Vector3 A = t.TransformPoint(mt.triangle.Centroid);
+			Vector3 E = t.TransformPoint(mt.triangle.Centroid + 0.4f * mt.normal);
+			Gizmos.DrawLine(A,E);
+		}
 
 		foreach( Triangle tri in _submergedTriangles)
 		{
 			GLUtil.RenderTriangle(t, tri.Vertex1, tri.Vertex2, tri.Vertex3, DrawingUtil.LimeGreen);
+			DrawingUtil.DrawTriangle(tri, Color.black);
 		}
 
 		Gizmos.color = DrawingUtil.Cyan;
 		foreach(WaterlinePair pair in _waterLinePoints) {
 			Gizmos.DrawLine(pair.p1, pair.p2);
+		}
+		
+		foreach(DebugInfo  dbInfo in _debugInfoList) {
+		//	Gizmos.DrawSphere(dbInfo._pointOfApplication , 0.01f);
+			Gizmos.color = Color.red;
+			Gizmos.DrawLine(dbInfo._pointOfApplication , dbInfo._pointOfApplication +  0.1f * dbInfo._normal);
 		}
 		
 		Vector3 center = getCenterWorldPosition();

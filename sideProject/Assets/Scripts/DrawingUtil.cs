@@ -82,6 +82,18 @@ public class DrawingUtil  {
         #endif
     }
 
+    public static void DrawTriangle(Triangle tri,  Color color)
+    {
+        #if UNITY_EDITOR
+            Color temp = Gizmos.color;
+            Gizmos.color = color;
+            Gizmos.DrawLine(tri.Vertex1, tri.Vertex2 );
+			Gizmos.DrawLine(tri.Vertex2, tri.Vertex3 );
+			Gizmos.DrawLine(tri.Vertex1, tri.Vertex3 );
+            Gizmos.color = temp;
+        #endif
+    }
+
 	public static void DrawGizmoBox(Bounds bounds, Color color) {
 		//Vector3 vCenter = bounds.center;
 		//Vector3 vExtents = bounds.extents;
