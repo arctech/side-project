@@ -60,7 +60,12 @@ public class GLUtil : MonoBehaviour
     } */
 
      //void OnPostRender() {
-     public static void RenderTriangle(Transform t, Vector3 v1, Vector3 v2, Vector3 v3, Color color) {
+
+     public static void RenderTriangle(Triangle tri, Color color) {
+         RenderTriangle(tri.Vertex1, tri.Vertex2, tri.Vertex3,color);
+     }
+
+     public static void RenderTriangle(Vector3 v1, Vector3 v2, Vector3 v3, Color color) {
         if (!lineMaterial) {
           //  Debug.LogError("Please Assign a material on the inspector");
           CreateLineMaterial();

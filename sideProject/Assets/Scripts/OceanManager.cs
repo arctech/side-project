@@ -11,8 +11,7 @@ public class OceanManager : MonoBehaviour {
 	private float _elapsedSimulationTime = 0.0f;
 
 	private float _timeFactor = 1 / 20f;
-	
-	
+		
 	void Start () {
 		
 	}
