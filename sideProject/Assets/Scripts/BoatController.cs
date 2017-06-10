@@ -24,6 +24,8 @@ public class BoatController : MonoBehaviour {
 		}
 	}
 
+	public bool ApplyForce = false;
+
 	public bool ShowDebug = true;
 
 	public float WaterpatchScaleFactor = 1.5f;
@@ -48,10 +50,19 @@ public class BoatController : MonoBehaviour {
 	private Rigidbody _rigidBody;
 	public float Rho = 1000;
 
+	public float G = 9.81f;
+
+	private Vector3 _commonCenterOfApplication = Vector3.zero;
+	private Vector3 _totalForceVector = Vector3.zero;
+
+	private int[] _sortedTriangleArray = new int[3];
+
 	class SubmergedTriangle {
 		public Vector3 _normal;
 		public Vector3 _pointOfApplication;
 		public Triangle _triangle;
+		public float _depth = 1.0f;
+		public float _area;
 
 		public SubmergedTriangle(Vector3 pof, Vector3 normal, Triangle tri) {
 			_pointOfApplication = pof;
@@ -117,15 +128,12 @@ public class BoatController : MonoBehaviour {
 		float start = Time.realtimeSinceStartup;
 
 		_waterPatch.updateCenter(getCenterWorldPosition(), _oceanManager);
-
-		
 		_waterLinePoints.Clear();
 		_debugInfoList.Clear();
 		_submergedTriangleList.Clear();
 
 		Transform t = this.transform;
 				
-	 	List<int> partiallySubmergedTriangles = new List<int>();
 		for(int i = 0; i < _meshTriangleList.Count; i++)
 	   	{
 			MeshTriangle mt = _meshTriangleList[i];
@@ -162,7 +170,6 @@ public class BoatController : MonoBehaviour {
 			mt.worldspacePositions[2] = v3_transformed;
 			mt.submergedState = count;
 		
-			//mt._transform = t;
 			switch( count)
 			{
 				case 3:
@@ -179,9 +186,22 @@ public class BoatController : MonoBehaviour {
 					break;
 			}	
 
-			//_rigidBody.AddForceAtPosition(new Vector3(0, 1, 0), new Vector3(), ForceMode.Force);
+			
 		}
 
+		_totalForceVector = Vector3.zero;
+		_commonCenterOfApplication = Vector3.zero;
+		foreach(SubmergedTriangle tri in _submergedTriangleList) {
+			Vector3 force = -Rho * G * tri._depth * tri._normal * tri._triangle.calculateArea(); 
+			if( ApplyForce) {
+				_rigidBody.AddForceAtPosition(tri._pointOfApplication, force, ForceMode.Force);		
+			}
+			_totalForceVector += force;
+			_commonCenterOfApplication += tri._pointOfApplication;
+		}
+		_commonCenterOfApplication /= _submergedTriangleList.Count;
+		_totalForceVector /= _submergedTriangleList.Count;
+		
 		_debugMsg = "BoatController - update: " + (Time.realtimeSinceStartup - start);
 
 	/*	foreach( Triangle tri in _submergedTriangles)
@@ -214,37 +234,39 @@ public class BoatController : MonoBehaviour {
 	}
 
 	private void calcWaterLine(Transform t, MeshTriangle mt, List<SubmergedTriangle> submergedTriangleList, List<WaterlinePair> waterLinePoints ) {
-		int[] sortedIndices = new int[3] {0,1,2};
+		_sortedTriangleArray[0] = 0;
+		_sortedTriangleArray[1] = 1;
+		_sortedTriangleArray[2] = 2;
 
-		if (mt.vertexDistances[sortedIndices[0]] > mt.vertexDistances[sortedIndices[2]]) 
+		if (mt.vertexDistances[_sortedTriangleArray[0]] > mt.vertexDistances[_sortedTriangleArray[2]]) 
 		{
-			int temp = sortedIndices[0];
-			sortedIndices[0] = sortedIndices[2];
-			sortedIndices[2] = temp;
+			int temp = _sortedTriangleArray[0];
+			_sortedTriangleArray[0] = _sortedTriangleArray[2];
+			_sortedTriangleArray[2] = temp;
 		}
-		if(mt.vertexDistances[sortedIndices[0]] > mt.vertexDistances[sortedIndices[1]]) 
+		if(mt.vertexDistances[_sortedTriangleArray[0]] > mt.vertexDistances[_sortedTriangleArray[1]]) 
 		{
-			int temp = sortedIndices[0];
-			sortedIndices[0] = sortedIndices[1];
-			sortedIndices[1] = temp;
+			int temp = _sortedTriangleArray[0];
+			_sortedTriangleArray[0] = _sortedTriangleArray[1];
+			_sortedTriangleArray[1] = temp;
 		}
-		if(mt.vertexDistances[sortedIndices[1]] > mt.vertexDistances[sortedIndices[2]]) 
+		if(mt.vertexDistances[_sortedTriangleArray[1]] > mt.vertexDistances[_sortedTriangleArray[2]]) 
 		{
-			int temp = sortedIndices[1];
-			sortedIndices[1] = sortedIndices[2];
-			sortedIndices[2] = temp;
+			int temp = _sortedTriangleArray[1];
+			_sortedTriangleArray[1] = _sortedTriangleArray[2];
+			_sortedTriangleArray[2] = temp;
 		}
 
-		Vector3 L = mt.worldspacePositions[sortedIndices[0]];
-		Vector3 M = mt.worldspacePositions[sortedIndices[1]];
-		Vector3 H = mt.worldspacePositions[sortedIndices[2]];
+		Vector3 L = mt.worldspacePositions[_sortedTriangleArray[0]];
+		Vector3 M = mt.worldspacePositions[_sortedTriangleArray[1]];
+		Vector3 H = mt.worldspacePositions[_sortedTriangleArray[2]];
 		Vector3 normal = (t.TransformPoint((mt.triangle.Centroid + 0.1f * mt.normal))  - t.TransformPoint( mt.triangle.Centroid )).normalized;
 
 		// case 1:
-		if( (mt.vertexDistances[sortedIndices[0]] <= 0 && mt.vertexDistances[sortedIndices[1]] <= 0) && mt.vertexDistances[sortedIndices[2]] >= 0) 
+		if( (mt.vertexDistances[_sortedTriangleArray[0]] <= 0 && mt.vertexDistances[_sortedTriangleArray[1]] <= 0) && mt.vertexDistances[_sortedTriangleArray[2]] >= 0) 
 		{
-			float tm = -mt.vertexDistances[sortedIndices[1]] / (mt.vertexDistances[sortedIndices[2]] - mt.vertexDistances[sortedIndices[1]]);
-			float tl = -mt.vertexDistances[sortedIndices[0]] / (mt.vertexDistances[sortedIndices[2]] - mt.vertexDistances[sortedIndices[0]]);
+			float tm = -mt.vertexDistances[_sortedTriangleArray[1]] / (mt.vertexDistances[_sortedTriangleArray[2]] - mt.vertexDistances[_sortedTriangleArray[1]]);
+			float tl = -mt.vertexDistances[_sortedTriangleArray[0]] / (mt.vertexDistances[_sortedTriangleArray[2]] - mt.vertexDistances[_sortedTriangleArray[0]]);
 
 			Vector3 MH = H - M;
 			Vector3 LH = H - L;
@@ -273,9 +295,9 @@ public class BoatController : MonoBehaviour {
 			waterLinePoints.Add(new WaterlinePair(IM, IL));
 		}
 		// case 2:
-		if( (mt.vertexDistances[sortedIndices[0]] <= 0 &&  mt.vertexDistances[sortedIndices[1]] >= 0) && mt.vertexDistances[sortedIndices[2]] >= 0) {
-			float tm = -mt.vertexDistances[sortedIndices[0]] / (mt.vertexDistances[sortedIndices[1]] - mt.vertexDistances[sortedIndices[0]]);
-			float tl = -mt.vertexDistances[sortedIndices[0]] / (mt.vertexDistances[sortedIndices[2]] - mt.vertexDistances[sortedIndices[0]]);
+		if( (mt.vertexDistances[_sortedTriangleArray[0]] <= 0 &&  mt.vertexDistances[_sortedTriangleArray[1]] >= 0) && mt.vertexDistances[_sortedTriangleArray[2]] >= 0) {
+			float tm = -mt.vertexDistances[_sortedTriangleArray[0]] / (mt.vertexDistances[_sortedTriangleArray[1]] - mt.vertexDistances[_sortedTriangleArray[0]]);
+			float tl = -mt.vertexDistances[_sortedTriangleArray[0]] / (mt.vertexDistances[_sortedTriangleArray[2]] - mt.vertexDistances[_sortedTriangleArray[0]]);
 
 			Vector3 LM = M - L;
 			Vector3 LH = H - L;
@@ -349,8 +371,8 @@ public class BoatController : MonoBehaviour {
 		}
 
 		foreach(SubmergedTriangle tri in _submergedTriangleList) {
-			GLUtil.RenderTriangle(tri._triangle, DrawingUtil.LimeGreen);
-			DrawingUtil.DrawTriangle(tri._triangle, Color.black);
+			// GLUtil.RenderTriangle(tri._triangle, DrawingUtil.LimeGreen);
+			//DrawingUtil.DrawTriangle(tri._triangle, Color.black);
 			
 			Gizmos.color = Color.red;
 			//Vector3 A = t.TransformPoint(tri._pointOfApplication);
@@ -361,7 +383,14 @@ public class BoatController : MonoBehaviour {
 			Gizmos.DrawSphere(tri._pointOfApplication , 0.005f);
 		}
 
+		
+
 		Gizmos.color = DrawingUtil.Cyan;
+		Gizmos.DrawWireSphere(_commonCenterOfApplication, 0.5f);
+		//Debug.Log(_commonCenterOfApplication);
+		Gizmos.DrawLine(_commonCenterOfApplication, _commonCenterOfApplication + 1.0f * _totalForceVector);
+
+
 		foreach(WaterlinePair pair in _waterLinePoints) {
 			Gizmos.DrawLine(pair.p1, pair.p2);
 		}

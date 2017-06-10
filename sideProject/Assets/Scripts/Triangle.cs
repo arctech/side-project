@@ -28,6 +28,22 @@ public class Triangle {
     private void setCentroid() {
          centroid = 1.0f / 3.0f *  (v1 + v2 +v3);
     }
+
+    public static float calculateArea(Vector3 A, Vector3 B, Vector3 C) {
+        float a =  (B - C).magnitude;
+        float b =  (C - A).magnitude;
+        float c =  (B - A).magnitude;
+        float s = (a + b + c )/ 2;
+        return Mathf.Sqrt(s * (s - a)* (s - b) * (s - c));
+    }
+
+    public float calculateArea() {
+        float a =  (v2 - v3).magnitude;
+        float b =  (v3 - v1).magnitude;
+        float c =  (v2 - v1).magnitude;
+        float s = (a + b + c )/ 2;
+        return Mathf.Sqrt(s * (s - a)* (s - b) * (s - c));
+    }
     
     public Vector3 Vertex1{
         get {
