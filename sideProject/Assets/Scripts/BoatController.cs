@@ -24,6 +24,7 @@ public class BoatController : MonoBehaviour {
 		}
 	}
 
+	public bool UseVerticalForceOnly = true;
 	public bool ApplyForce = false;
 
 	public bool ShowDebug = true;
@@ -49,9 +50,6 @@ public class BoatController : MonoBehaviour {
 
 	private Rigidbody _rigidBody;
 	public float Rho = 1000;
-
-	public float G = 9.81f;
-
 	private Vector3 _commonCenterOfApplication = Vector3.zero;
 	private Vector3 _totalForceVector = Vector3.zero;
 
@@ -64,10 +62,12 @@ public class BoatController : MonoBehaviour {
 		public float _depth = 1.0f;
 		public float _area;
 
-		public SubmergedTriangle(Vector3 pof, Vector3 normal, Triangle tri) {
+
+		public SubmergedTriangle(Vector3 pof, Vector3 normal,float depthToWater, Triangle tri) {
 			_pointOfApplication = pof;
 			_normal = normal;
 			_triangle = tri;
+			_depth = depthToWater;
 		}
 	}
 
@@ -172,11 +172,13 @@ public class BoatController : MonoBehaviour {
 		
 			switch( count)
 			{
+				// totally submerged triangles
 				case 3:
 					Vector3 normal = (t.TransformPoint((mt.triangle.Centroid + 0.1f * mt.normal))  - t.TransformPoint( mt.triangle.Centroid )).normalized;
 					Triangle tri = new Triangle(v1_transformed, v2_transformed, v3_transformed);
-					_submergedTriangleList.Add(new SubmergedTriangle(tri.Centroid, normal, tri));
+					_submergedTriangleList.Add(new SubmergedTriangle(tri.Centroid, normal, getDistanceToWaterpatch(tri.Centroid), tri));
 					break;
+				// partially submerged triangles
 				case 2:
 				case 1:
 					calcWaterLine(t, mt, _submergedTriangleList, _waterLinePoints);
@@ -189,18 +191,7 @@ public class BoatController : MonoBehaviour {
 			
 		}
 
-		_totalForceVector = Vector3.zero;
-		_commonCenterOfApplication = Vector3.zero;
-		foreach(SubmergedTriangle tri in _submergedTriangleList) {
-			Vector3 force = -Rho * G * tri._depth * tri._normal * tri._triangle.calculateArea(); 
-			if( ApplyForce) {
-				_rigidBody.AddForceAtPosition(tri._pointOfApplication, force, ForceMode.Force);		
-			}
-			_totalForceVector += force;
-			_commonCenterOfApplication += tri._pointOfApplication;
-		}
-		_commonCenterOfApplication /= _submergedTriangleList.Count;
-		_totalForceVector /= _submergedTriangleList.Count;
+
 		
 		_debugMsg = "BoatController - update: " + (Time.realtimeSinceStartup - start);
 
@@ -232,6 +223,29 @@ public class BoatController : MonoBehaviour {
 			_waterPatchCellWidth = Mathf.Max(_waterPatchCellWidth - waterPatchIncrement, 1.0f);	
 		}*/
 	}
+
+
+	public void FixedUpdate() {
+		_totalForceVector = Vector3.zero;
+		_commonCenterOfApplication = Vector3.zero;
+		foreach(SubmergedTriangle tri in _submergedTriangleList) {
+			Vector3 force = checkForceIsValid(Rho * Physics.gravity.y * (-tri._depth) * tri._triangle.calculateArea() * tri._normal.normalized, "buoyancy force"); 
+			if( ApplyForce) {
+				if(UseVerticalForceOnly) { 
+					force.x = 0.0f;
+					force.z = 0.0f;
+				}
+				_rigidBody.AddForceAtPosition(force, tri._pointOfApplication);			
+			}
+			_totalForceVector += force;
+			_commonCenterOfApplication += tri._pointOfApplication;
+		}
+
+		_commonCenterOfApplication /= _submergedTriangleList.Count;
+	//	_totalForceVector /= _submergedTriangleList.Count;
+
+	}
+
 
 	private void calcWaterLine(Transform t, MeshTriangle mt, List<SubmergedTriangle> submergedTriangleList, List<WaterlinePair> waterLinePoints ) {
 		_sortedTriangleArray[0] = 0;
@@ -277,20 +291,19 @@ public class BoatController : MonoBehaviour {
 
 			Triangle t1 = new Triangle(IM,M,L);
 			Vector3 normal1 = calculateNormal(IM, M, L);
-			Vector3 orig = normal1;
 			if(! (normal == normal1))
 			{
 				normal1 *= -1;
 			}
-				
-			_submergedTriangleList.Add(new SubmergedTriangle(t1.Centroid, normal1, t1));
+			
+			_submergedTriangleList.Add(new SubmergedTriangle(t1.Centroid, normal1, getDistanceToWaterpatch(t1.Centroid), t1));
 			Vector3 normal2 = calculateNormal(IL, IM, L);
 			if(! (normal == normal2))
 			{
 				normal2 *= -1;
 			}
 			Triangle t2 = new Triangle(IL,IM,L);
-			_submergedTriangleList.Add(new SubmergedTriangle(t2.Centroid, normal2, t2));
+			_submergedTriangleList.Add(new SubmergedTriangle(t2.Centroid, normal2, getDistanceToWaterpatch(t2.Centroid), t2));
 
 			waterLinePoints.Add(new WaterlinePair(IM, IL));
 		}
@@ -311,7 +324,7 @@ public class BoatController : MonoBehaviour {
 			{
 				normal3 *= -1;
 			}
-			_submergedTriangleList.Add(new SubmergedTriangle(tri.Centroid, normal3, tri));
+			_submergedTriangleList.Add(new SubmergedTriangle(tri.Centroid, normal3, getDistanceToWaterpatch(tri.Centroid), tri));
 		
 			waterLinePoints.Add(new WaterlinePair(IM, IH));
 		}
@@ -344,10 +357,6 @@ public class BoatController : MonoBehaviour {
 			Vector3 AC = C - A;
 			Vector3 cross = Vector3.Cross(AB, AC);
 			float d = Vector3.Dot(cross, A);
-			if(Mathf.Approximately(cross.y, 0))
-			{
-				return 0;
-			}
 			distance = point.y - ((d - cross.x * point.x - cross.z * point.z) / cross.y);
 		}
 		return distance;
@@ -371,7 +380,7 @@ public class BoatController : MonoBehaviour {
 		}
 
 		foreach(SubmergedTriangle tri in _submergedTriangleList) {
-			// GLUtil.RenderTriangle(tri._triangle, DrawingUtil.LimeGreen);
+			GLUtil.RenderTriangle(tri._triangle, DrawingUtil.LimeGreen);
 			//DrawingUtil.DrawTriangle(tri._triangle, Color.black);
 			
 			Gizmos.color = Color.red;
@@ -381,6 +390,11 @@ public class BoatController : MonoBehaviour {
 			//Vector3 E = tri._pointOfApplication + 0.1f * tri._normal;
 			Gizmos.DrawLine(tri._pointOfApplication,tri._pointOfApplication + 0.1f * tri._normal);
 			Gizmos.DrawSphere(tri._pointOfApplication , 0.005f);
+
+			Gizmos.color = Color.yellow;
+			//Gizmos.DrawLine(tri._pointOfApplication, new Vector3(tri._pointOfApplication.x, tri._pointOfApplication.y - tri._depth, tri._pointOfApplication.z ));
+			
+			
 		}
 
 		
@@ -458,4 +472,19 @@ public class BoatController : MonoBehaviour {
 		Vector3 CB = v3 - v1;
 		return Vector3.Cross(AB, CB).normalized;
 	}
+
+	 //Check that a force is not NaN
+    private static Vector3 checkForceIsValid(Vector3 force, string forceName)
+    {
+        if (!float.IsNaN(force.x + force.y + force.z))
+        {
+            return force;
+        }
+        else
+        {
+            Debug.Log(forceName += " force is NaN");
+
+            return Vector3.zero;
+        }
+    }
 }
