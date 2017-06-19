@@ -44,7 +44,7 @@ public class BoatController : MonoBehaviour {
 	private OceanManager _oceanManager;
 
 	private List<WaterlinePair> _waterLinePoints = new List<WaterlinePair>();
-	private List<DebugInfo> _debugInfoList = new List<DebugInfo>();
+	//private List<DebugInfo> _debugInfoList = new List<DebugInfo>();
 
 	private List<SubmergedTriangle> _submergedTriangleList = new List<SubmergedTriangle>();
 
@@ -54,6 +54,7 @@ public class BoatController : MonoBehaviour {
 	private Vector3 _totalForceVector = Vector3.zero;
 
 	private int[] _sortedTriangleArray = new int[3];
+	private float _totalSubmergedArea = 0.0f;
 
 	class SubmergedTriangle {
 		public Vector3 _normal;
@@ -61,26 +62,16 @@ public class BoatController : MonoBehaviour {
 		public Triangle _triangle;
 		public float _depth = 1.0f;
 		public float _area;
-
+		public Vector3 _forceVector;
 
 		public SubmergedTriangle(Vector3 pof, Vector3 normal,float depthToWater, Triangle tri) {
 			_pointOfApplication = pof;
 			_normal = normal;
 			_triangle = tri;
 			_depth = depthToWater;
-		}
-	}
+			_area = tri.calculateArea();
 
-	class DebugInfo {
-		public Vector3 _normal;
-		public Vector3 _pointOfApplication;
-		public Vector3 _force;
-
-		public DebugInfo(Vector3 normal, Vector3 poa, Vector3 force)
-		{
-			this._normal = normal;
-			this._pointOfApplication = poa;
-			this._force = force;
+			_forceVector = 1027 * Physics.gravity.y * (-_depth) * _triangle.calculateArea() * _normal.normalized;
 		}
 	}
 
@@ -129,9 +120,8 @@ public class BoatController : MonoBehaviour {
 
 		_waterPatch.updateCenter(getCenterWorldPosition(), _oceanManager);
 		_waterLinePoints.Clear();
-		_debugInfoList.Clear();
 		_submergedTriangleList.Clear();
-
+	
 		Transform t = this.transform;
 				
 		for(int i = 0; i < _meshTriangleList.Count; i++)
@@ -187,12 +177,8 @@ public class BoatController : MonoBehaviour {
 				default:
 					break;
 			}	
-
-			
 		}
 
-
-		
 		_debugMsg = "BoatController - update: " + (Time.realtimeSinceStartup - start);
 
 	/*	foreach( Triangle tri in _submergedTriangles)
@@ -226,10 +212,13 @@ public class BoatController : MonoBehaviour {
 
 
 	public void FixedUpdate() {
+		_totalSubmergedArea = 0.0f;
 		_totalForceVector = Vector3.zero;
 		_commonCenterOfApplication = Vector3.zero;
 		foreach(SubmergedTriangle tri in _submergedTriangleList) {
-			Vector3 force = checkForceIsValid(Rho * Physics.gravity.y * (-tri._depth) * tri._triangle.calculateArea() * tri._normal.normalized, "buoyancy force"); 
+			_totalSubmergedArea += tri._area;
+			Vector3 force = checkForceIsValid(Rho * Physics.gravity.y * (-tri._depth) * tri._area * tri._normal.normalized, "buoyancy force"); 
+			tri._forceVector = force;
 			if( ApplyForce) {
 				if(UseVerticalForceOnly) { 
 					force.x = 0.0f;
@@ -379,8 +368,12 @@ public class BoatController : MonoBehaviour {
 			Gizmos.DrawLine(A,E);
 		}
 
+		float maxForce = 0.0f;
 		foreach(SubmergedTriangle tri in _submergedTriangleList) {
-			GLUtil.RenderTriangle(tri._triangle, DrawingUtil.LimeGreen);
+			Color col = new Color(0.0f, tri._area / _totalSubmergedArea, 0.0f, 1.0f);
+			Debug.Log( tri._area / _totalSubmergedArea);
+			//GLUtil.RenderTriangle(tri._triangle, DrawingUtil.LimeGreen * tri._area / _totalSubmergedArea);
+			GLUtil.RenderTriangle(tri._triangle, col);
 			//DrawingUtil.DrawTriangle(tri._triangle, Color.black);
 			
 			Gizmos.color = Color.red;
@@ -391,12 +384,17 @@ public class BoatController : MonoBehaviour {
 			Gizmos.DrawLine(tri._pointOfApplication,tri._pointOfApplication + 0.1f * tri._normal);
 			Gizmos.DrawSphere(tri._pointOfApplication , 0.005f);
 
-			Gizmos.color = Color.yellow;
-			//Gizmos.DrawLine(tri._pointOfApplication, new Vector3(tri._pointOfApplication.x, tri._pointOfApplication.y - tri._depth, tri._pointOfApplication.z ));
-			
-			
+			Gizmos.color = Color.blue;
+		//	Gizmos.DrawLine(tri._pointOfApplication, new Vector3(tri._pointOfApplication.x, tri._pointOfApplication.y - tri._depth, tri._pointOfApplication.z ));
+		//	Gizmos.color = Color.green;
+			maxForce = Mathf.Max(maxForce, tri._forceVector.magnitude);
+		//	Debug.Log(tri._forceVector);
 		}
-
+		
+		foreach(SubmergedTriangle tri in _submergedTriangleList) {
+			Gizmos.color = Color.blue;
+			Gizmos.DrawLine(tri._pointOfApplication, tri._pointOfApplication + (-1.0f *  tri._forceVector.magnitude / maxForce ) * tri._forceVector.normalized);
+		}
 		
 
 		Gizmos.color = DrawingUtil.Cyan;
@@ -409,11 +407,11 @@ public class BoatController : MonoBehaviour {
 			Gizmos.DrawLine(pair.p1, pair.p2);
 		}
 		
-		foreach(DebugInfo  dbInfo in _debugInfoList) {
+//		foreach(DebugInfo  dbInfo in _debugInfoList) {
 		//	Gizmos.DrawSphere(dbInfo._pointOfApplication , 0.01f);
 		//	Gizmos.color = Color.red;
 		//	Gizmos.DrawLine(dbInfo._pointOfApplication , dbInfo._pointOfApplication +  0.1f * dbInfo._normal);
-		}
+//		}
 		
 		Vector3 center = getCenterWorldPosition();
 	
