@@ -5,6 +5,7 @@ Shader "OceanShader"
 {
 	Properties
 	{
+		_AppTime ("AppTime", Float) = 1
 		_LineColor ("LineColor", Color) = (1,1,1,1)
 		_FillColor ("FillColor", Color) = (0,0,0,0)
 		_WireThickness ("Wire Thickness", RANGE(0, 800)) = 100
@@ -84,6 +85,7 @@ Shader "OceanShader"
 			float4 _Direction_4;
 			float _q_4;
 			float4 _BaseColor;
+			float _AppTime;
 			//float _k;
 			
 
@@ -136,7 +138,8 @@ Shader "OceanShader"
 				float w = 2 / waveLength;
 				float Qi = Q / (w * amplitude * 6.28318530718 * 4); // not in paper - multiply with 2pi
 				float phi = speed * w;
-				float term = w * dot(dirNormalized, posWS.xz) + _Time.x * phi;
+				//float term = w * dot(dirNormalized, posWS.xz) + _Time.x * phi;
+				float term = w * dot(dirNormalized, posWS.xz) + _AppTime * phi;
 				float temp = Qi * amplitude * cos(term);
 				float x = dirNormalized.x * temp;
 				float y = amplitude * sin(term);
@@ -169,8 +172,8 @@ Shader "OceanShader"
 				float4 posSum = (sw1.pos + sw2.pos + sw3.pos + sw4.pos) / 4;
 				float4 normalSum = normalize(sw1.normals + sw2.normals + sw3.normals + sw4.normals);
 
-				//posSum = (sw1.pos);
-				//normalSum = normalize(sw1.normals);
+				posSum = (sw1.pos) / 4;
+				normalSum = normalize(sw1.normals);
 			
 				v.vertex = float4(posWS.x + posSum.x, posSum.y, posWS.z + posSum.z, 1);
 				
