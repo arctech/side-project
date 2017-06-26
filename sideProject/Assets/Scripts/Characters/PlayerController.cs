@@ -5,13 +5,12 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour {
 
 	public float forwardSpeed = 0.1f;
-
 	private Animator _animator;
 	private Rigidbody _rigidbody;
 	private int _floorMask;
 	private float _camRayLength = 100f;
 
-
+	private bool _hasDied = false;
 
 	void Awake() {
 		_rigidbody = this.GetComponent<Rigidbody>();
@@ -61,6 +60,9 @@ public class PlayerController : MonoBehaviour {
 		} 
 		if(Input.GetKey(KeyCode.F)) {
 			_animator.SetTrigger("Die");
+		//	if(!_hasDied) {
+ 		//		StartCoroutine(triggerDelayedGetupAnimation());
+		//	}
 		}
 	}
 
@@ -122,4 +124,11 @@ public class PlayerController : MonoBehaviour {
             _animator.SetTrigger("Die");
         }*/
     }
+
+	 // The delay coroutine
+     IEnumerator triggerDelayedGetupAnimation ()
+     {
+         yield return new WaitForSeconds(2);
+         _animator.Play("get_up");
+     }
 }
