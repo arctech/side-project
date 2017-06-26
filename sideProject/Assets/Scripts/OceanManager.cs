@@ -8,21 +8,35 @@ public class OceanManager : MonoBehaviour {
 	
 	[System.Serializable]
 	public class GerstnerWave {
+		
+		[Range(0,10)]
 		public float Q = 0;
+		[Range(0,100)]
 		public float WaveLength = 1;
+		[Range(0.01f,10)]
 		public float Amplitude = 1;
 		public Vector2 Direction = Vector2.zero;
+		
+		[Range(0, 100)]
 		public float Speed = 1;
+
+		public GerstnerWave(float q, float w, float a, Vector2 d, float s) {
+			Q = q;
+			WaveLength = w;
+			Amplitude = a;
+			Direction = d.normalized;
+			Speed = s;
+		}
 	}
 
 	public int numTiles = 100;
 	public int dim = 50;
 
 	public bool showDebug = true;
-	public GerstnerWave wave1 = new GerstnerWave();
-	public GerstnerWave wave2 = new GerstnerWave();
-	public GerstnerWave wave3 = new GerstnerWave();
-	public GerstnerWave wave4 = new GerstnerWave();
+	public GerstnerWave wave1 = new GerstnerWave(1, 1, 1, new Vector2(1,0), 1);
+	public GerstnerWave wave2 = new GerstnerWave(1, 1, 1, new Vector2(1,0), 1);
+	public GerstnerWave wave3 = new GerstnerWave(1, 1, 1, new Vector2(1,0), 1);
+	public GerstnerWave wave4 = new GerstnerWave(1, 1, 1, new Vector2(1,0), 1);
 	private float _elapsedSimulationTime = 0.0f;
 	private float _timeFactor = 1 / 20f;
 	private float _span;
@@ -42,9 +56,9 @@ public class OceanManager : MonoBehaviour {
 		Material[] materialsArray = this.GetComponent<MeshRenderer> ().materials;
 		 foreach (Material material in materialsArray) {
 			 if(material.name.Equals("OceanMaterial (Instance)")) {
-				Debug.Log(material.name);
+			//	Debug.Log(material.name);
 				_material = material;
-				Debug.Log(material);
+			//	Debug.Log(material);
 			 }
 		 }
 	
@@ -66,6 +80,24 @@ public class OceanManager : MonoBehaviour {
 			_material.SetFloat("_Wavespeed_1", wave1.Speed);
 			_material.SetFloat("_Amplitude_1", wave1.Amplitude);
 			_material.SetColor("_Direction_1", new Color(wave1.Direction.x, wave1.Direction.y, 0, 1));
+
+			_material.SetFloat("_q_2", wave2.Q);
+			_material.SetFloat("_Wavelength_2", wave2.WaveLength);
+			_material.SetFloat("_Wavespeed_2", wave2.Speed);
+			_material.SetFloat("_Amplitude_2", wave2.Amplitude);
+			_material.SetColor("_Direction_2", new Color(wave2.Direction.x, wave2.Direction.y, 0, 1));
+
+			_material.SetFloat("_q_3", wave3.Q);
+			_material.SetFloat("_Wavelength_3", wave3.WaveLength);
+			_material.SetFloat("_Wavespeed_3", wave3.Speed);
+			_material.SetFloat("_Amplitude_3", wave3.Amplitude);
+			_material.SetColor("_Direction_3", new Color(wave3.Direction.x, wave3.Direction.y, 0, 1));
+
+			_material.SetFloat("_q_4", wave4.Q);
+			_material.SetFloat("_Wavelength_4", wave4.WaveLength);
+			_material.SetFloat("_Wavespeed_4", wave4.Speed);
+			_material.SetFloat("_Amplitude_4", wave4.Amplitude);
+			_material.SetColor("_Direction_4", new Color(wave4.Direction.x, wave4.Direction.y, 0, 1));
 			//Debug.Log("Fixed update " + Time.realtimeSinceStartup);
 		}
 		
@@ -83,8 +115,8 @@ public class OceanManager : MonoBehaviour {
 
 		//Vector3 result = pointWS;
 		Vector3 sum = (gw1.position + gw2.position + gw3.position + gw4.position) / 4;
-		
-		sum = gw1.position / 4;
+		//Debug.Log(sum);
+		//sum = gw1.position / 4;
 		
 		//result.y += Random.Range(-0.01f, 0.01f);
 		//result.y += MathUtil.RandomSign * Random.value * 0.05f;

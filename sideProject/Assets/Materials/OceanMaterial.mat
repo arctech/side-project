@@ -8,7 +8,7 @@ Material:
   m_PrefabInternal: {fileID: 0}
   m_Name: OceanMaterial
   m_Shader: {fileID: 4800000, guid: 39f73444c3673f942907bb7eb8ce8465, type: 3}
-  m_ShaderKeywords: SHOWWIREFRAME_ON
+  m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_CustomRenderQueue: -1
@@ -55,7 +55,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - ShowNormals: 0
-    - ShowWireframe: 1
+    - ShowWireframe: 0
     - UseDiscard: 0
     - _Amplitude: 0.26
     - _Amplitude_1: 0.47
@@ -107,5 +107,5 @@ Material:
     - _Direction_3: {r: 0.878, g: 0.008, b: 0.0031832524, a: 0}
     - _Direction_4: {r: 0.934, g: 0.022, b: 0.009, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _FillColor: {r: 0.080287635, g: 0.25829637, b: 0.33088237, a: 0}
-    - _LineColor: {r: 0.17003678, g: 0.49704158, b: 0.625, a: 1}
+    - _FillColor: {r: 0.08953287, g: 0.5294118, b: 0.27458534, a: 0}
+    - _LineColor: {r: 0.08883001, g: 0.30508456, b: 0.3897059, a: 1}

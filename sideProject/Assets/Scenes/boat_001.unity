@@ -338,7 +338,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   numTiles: 100
   dim: 50
-  showDebug: 1
+  showDebug: 0
   wave1:
     Q: 1
     WaveLength: 1.7
@@ -346,22 +346,22 @@ MonoBehaviour:
     Direction: {x: 0, y: 1}
     Speed: 2
   wave2:
-    Q: 0
-    WaveLength: 0
-    Amplitude: 0
-    Direction: {x: 0, y: 0}
+    Q: 1
+    WaveLength: 1
+    Amplitude: 0.01
+    Direction: {x: 1, y: 0}
     Speed: 0
   wave3:
-    Q: 0
-    WaveLength: 0
-    Amplitude: 0
-    Direction: {x: 0, y: 0}
+    Q: 1
+    WaveLength: 1
+    Amplitude: 0.14
+    Direction: {x: 1, y: 0}
     Speed: 0
   wave4:
-    Q: 0
-    WaveLength: 0
-    Amplitude: 0
-    Direction: {x: 0, y: 0}
+    Q: 1
+    WaveLength: 1
+    Amplitude: 0.01
+    Direction: {x: 1, y: 0}
     Speed: 0
 --- !u!1 &750683757
 GameObject:
@@ -478,6 +478,8 @@ MonoBehaviour:
   ApplyForce: 1
   UseDragForce: 1
   ShowDebug: 1
+  waterPatchDimX: 4
+  waterPatchDimY: 4
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 0}
   Rho: 1000
@@ -644,6 +646,8 @@ MonoBehaviour:
   ApplyForce: 1
   UseDragForce: 1
   ShowDebug: 1
+  waterPatchDimX: 4
+  waterPatchDimY: 4
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 0}
   Rho: 1000
@@ -889,6 +893,8 @@ MonoBehaviour:
   ApplyForce: 1
   UseDragForce: 1
   ShowDebug: 1
+  waterPatchDimX: 5
+  waterPatchDimY: 5
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 688232565}
   Rho: 1000
@@ -1172,6 +1178,8 @@ MonoBehaviour:
   ApplyForce: 1
   UseDragForce: 1
   ShowDebug: 1
+  waterPatchDimX: 4
+  waterPatchDimY: 4
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 688232565}
   Rho: 1000

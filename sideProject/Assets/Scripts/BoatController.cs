@@ -7,22 +7,41 @@ using UnityEngine;
  */
 public class BoatController : MonoBehaviour {
 
+	class BVertex {
+		public Vector3 Position = Vector3.zero;
+		float Depth = 0.0f;
+	}
+
+	class BTriangle {
+		public BVertex A;
+		public BVertex B;
+		public BVertex C;
+
+		private float Area;
+
+		BVertex Center;
+		Vector3 ForceCenter;
+		Vector3 Normal;
+
+		Vector3 Force;
+
+		public BTriangle () {}
+	}
+
 	class MeshTriangle {
 		public Triangle triangle;
 		public int triangleId;
 		public Vector3 normal;
 
-		// 0 vertices, 1 vertex, 2 vertices or all 3 vertices submerged;
-		public int submergedState;	
 		public float[] vertexDistances = new float[3];
 		public Vector3[] worldspacePositions = new Vector3[3];
-		public MeshTriangle(Triangle triangle, int triangleId, Vector3 normal) {
+		public MeshTriangle(Triangle triangle, Vector3 normal) {
 			this.triangle = triangle;
-			this.triangleId = triangleId;
-			this.submergedState = 0;
 			this.normal = normal;
 		}
 	}
+
+	private List<BTriangle> _submergedTriangles = new List<BTriangle>();
 
 	public bool UseVerticalForceOnly = true;
 
@@ -31,6 +50,10 @@ public class BoatController : MonoBehaviour {
 	public bool UseDragForce = true;
 	
 	public bool ShowDebug = true;
+
+	public int waterPatchDimX = 5;
+
+	public int waterPatchDimY = 5;
 
 	public float WaterpatchScaleFactor = 1.5f;
 	private List<MeshTriangle> _meshTriangleList = new List<MeshTriangle>();
@@ -47,8 +70,6 @@ public class BoatController : MonoBehaviour {
 	public OceanManager _oceanManager;
 
 	private List<WaterlinePair> _waterLinePoints = new List<WaterlinePair>();
-	//private List<DebugInfo> _debugInfoList = new List<DebugInfo>();
-
 	private List<SubmergedTriangle> _submergedTriangleList = new List<SubmergedTriangle>();
 
 	private Rigidbody _rigidBody;
@@ -58,6 +79,8 @@ public class BoatController : MonoBehaviour {
 
 	private int[] _sortedTriangleArray = new int[3];
 	private float _totalSubmergedArea = 0.0f;
+
+	private float _forceFactor = 1.0f;	// - rho * gravity
 
 	class SubmergedTriangle {
 		public Vector3 _normal;
@@ -93,8 +116,7 @@ public class BoatController : MonoBehaviour {
 		Application.targetFrameRate = 30;
 
 		_rigidBody = this.GetComponent<Rigidbody>();
-		
-
+	
 		Mesh boatMesh = this.GetComponent<MeshFilter>().mesh;
 		_boatMesh = this.GetComponent<MeshFilter>().mesh;
 
@@ -109,12 +131,15 @@ public class BoatController : MonoBehaviour {
     		Vector3 p1 = boatMesh.vertices[boatMesh.triangles[i + 0]];
     		Vector3 p2 = boatMesh.vertices[boatMesh.triangles[i + 1]];
     		Vector3 p3 = boatMesh.vertices[boatMesh.triangles[i + 2]];
-			_meshTriangleList.Add(new MeshTriangle(new Triangle(p1, p2, p3), triangleId++, calculateNormal(p1, p2, p3)));	
+			_meshTriangleList.Add(new MeshTriangle(new Triangle(p1, p2, p3), calculateNormal(p1, p2, p3)));	
 		}
 		_boatMeshCenter = _boatMesh.bounds.center;
 
-		_waterPatch.init(getCenterWorldPosition(), WaterpatchScaleFactor * boatMeshDiagLength, 5);
+		_waterPatch.init(getCenterWorldPosition(), WaterpatchScaleFactor * boatMeshDiagLength, waterPatchDimX);
 		_waterPatch.build();
+
+		// force pre-factor
+		_forceFactor = -(Rho * Physics.gravity.y);
 	}
 	
 	// Update is called once per frame
@@ -162,7 +187,7 @@ public class BoatController : MonoBehaviour {
 			mt.worldspacePositions[0] = v1_transformed;
 			mt.worldspacePositions[1] = v2_transformed;
 			mt.worldspacePositions[2] = v3_transformed;
-			mt.submergedState = count;
+	//		mt.submergedState = count;
 		
 			switch( count)
 			{
@@ -197,9 +222,9 @@ public class BoatController : MonoBehaviour {
 
 		if( Input.GetKeyDown(KeyCode.D))
 		{
-			_waterPatch.incrementNumTiles();
+	//		_waterPatch.incrementNumTiles();
 		} else if (Input.GetKeyDown(KeyCode.A)){
-			_waterPatch.decrementNumTiles();
+	//		_waterPatch.decrementNumTiles();
 		}
 	
 		/*if( Input.GetKeyDown(KeyCode.W))
@@ -221,7 +246,7 @@ public class BoatController : MonoBehaviour {
 		_commonCenterOfApplication = Vector3.zero;
 		foreach(SubmergedTriangle tri in _submergedTriangleList) {
 			_totalSubmergedArea += tri._area;
-			Vector3 force = checkForceIsValid(Rho * Physics.gravity.y * (-tri._depth) * tri._area * tri._normal.normalized, "buoyancy force"); 
+			Vector3 force = checkForceIsValid(_forceFactor * (tri._depth) * tri._area * tri._normal.normalized, "buoyancy force"); 
 			tri._forceVector = force;
 			if( ApplyForce) {
 				if(UseVerticalForceOnly) { 
@@ -244,6 +269,9 @@ public class BoatController : MonoBehaviour {
 	private void calcHydrostaticForce() {
 
 	}
+
+	private void calcSlamForce() {}
+
 
 	private void calcDragForce() {
 

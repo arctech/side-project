@@ -172,8 +172,8 @@ Shader "OceanShader"
 				float4 posSum = (sw1.pos + sw2.pos + sw3.pos + sw4.pos) / 4;
 				float4 normalSum = normalize(sw1.normals + sw2.normals + sw3.normals + sw4.normals);
 
-				posSum = (sw1.pos) / 4;
-				normalSum = normalize(sw1.normals);
+			//	posSum = (sw1.pos) / 4;
+			//	normalSum = normalize(sw1.normals);
 			
 				v.vertex = float4(posWS.x + posSum.x, posSum.y, posWS.z + posSum.z, 1);
 				

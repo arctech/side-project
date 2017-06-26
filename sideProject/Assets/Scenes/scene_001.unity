@@ -184,9 +184,8 @@ GameObject:
   - component: {fileID: 892410379}
   - component: {fileID: 892410378}
   - component: {fileID: 892410377}
-  - component: {fileID: 892410380}
-  - component: {fileID: 892410381}
   - component: {fileID: 892410382}
+  - component: {fileID: 892410380}
   m_Layer: 0
   m_Name: Capsule
   m_TagString: Untagged
@@ -205,7 +204,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &892410377
 MeshRenderer:
@@ -267,22 +266,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 892410375}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 52d817225c019df44a114473cbf44158, type: 3}
+  m_Script: {fileID: 11500000, guid: 73fad04c998f78f4681e96f44bb70dee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _target: {fileID: 892410376}
---- !u!114 &892410381
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 892410375}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 314874597f1e27a48b057605aeb0278b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 6
+  forwardSpeed: 0.1
 --- !u!54 &892410382
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -326,10 +313,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1371550735}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 84f710ae717968043a312e66a7f36e26, type: 3}
+  m_Script: {fileID: 11500000, guid: e0e4605a2cfeb7c43aa93d262a25a085, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  camera: {fileID: 1371550740}
+  followTarget: {fileID: 892410376}
+  lookAtOffset: {x: 0, y: 0, z: 0}
+  attachedCamera: {fileID: 1371550740}
+  springArmLength: 1
 --- !u!81 &1371550737
 AudioListener:
   m_ObjectHideFlags: 0
@@ -565,7 +555,7 @@ Transform:
   m_LocalScale: {x: 0.34281904, y: 0.342819, z: 0.342819}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2112857730
 MonoBehaviour:

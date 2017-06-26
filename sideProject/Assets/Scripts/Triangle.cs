@@ -29,12 +29,10 @@ public class Triangle {
          centroid = 1.0f / 3.0f *  (v1 + v2 +v3);
     }
 
-    public static float calculateArea(Vector3 A, Vector3 B, Vector3 C) {
-        float a =  Vector3.Distance(A, B);
-        float b =  Vector3.Distance(B, C);
-        float c =  Vector3.Distance(C, A);
-        float s = (a + b + c )/ 2.0f;
-        return Mathf.Sqrt(s * (s - a)* (s - b) * (s - c));
+    public static float calculateArea(Vector3 v1, Vector3 v2, Vector3 v3) {
+        float a = Vector3.Distance(v1, v2);
+        float c = Vector3.Distance(v3, v1);
+        return (a * c * Mathf.Sin(Vector3.Angle(v2 - v1, v3 - v1) * Mathf.Deg2Rad)) / 2f;
     }
 
     public float calculateArea() {
