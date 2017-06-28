@@ -340,13 +340,13 @@ MonoBehaviour:
   dim: 50
   showDebug: 0
   wave1:
-    Q: 1
+    Q: 0
     WaveLength: 1.7
-    Amplitude: 0.47
+    Amplitude: 0.01
     Direction: {x: 0, y: 1}
     Speed: 2
   wave2:
-    Q: 1
+    Q: 3.33
     WaveLength: 1
     Amplitude: 0.01
     Direction: {x: 1, y: 0}
@@ -354,7 +354,7 @@ MonoBehaviour:
   wave3:
     Q: 1
     WaveLength: 1
-    Amplitude: 0.14
+    Amplitude: 0.01
     Direction: {x: 1, y: 0}
     Speed: 0
   wave4:
@@ -898,7 +898,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1394594686}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -12.22, y: 0.53, z: 4.91}
+  m_LocalPosition: {x: -12.22, y: 0.766, z: 4.91}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1799928989}
@@ -916,10 +916,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SimSettings:
-    ApplyForce: 0
+    ApplyForce: 1
     UseDragForce: 1
     UseSlamForce: 1
-    UseVerticalForceOnly: 1
+    UseVerticalForceOnly: 0
     slamForceMultiplier: 5000
     Rho: 1000
     WaterpatchDimRows: 5
@@ -999,10 +999,10 @@ Rigidbody:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1394594686}
   serializedVersion: 2
-  m_Mass: 1000
+  m_Mass: 100
   m_Drag: 0
   m_AngularDrag: 0.05
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
@@ -1214,7 +1214,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SimSettings:
-    ApplyForce: 0
+    ApplyForce: 1
     UseDragForce: 1
     UseSlamForce: 1
     UseVerticalForceOnly: 1
@@ -1231,8 +1231,8 @@ MonoBehaviour:
     ShowWaterPatch: 1
     ShowNormalsOriginalMesh: 1
     ShowTotalForce: 0
-    ShowVertexHeight: 1
-    ShowTriangles: 1
+    ShowVertexHeight: 0
+    ShowTriangles: 0
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 688232565}
 --- !u!54 &2112857731
@@ -1242,7 +1242,7 @@ Rigidbody:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2112857725}
   serializedVersion: 2
-  m_Mass: 400
+  m_Mass: 100
   m_Drag: 0
   m_AngularDrag: 0.05
   m_UseGravity: 1

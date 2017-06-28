@@ -48,7 +48,7 @@ public class WaterPatch
 		_center.z = patchCenter.z;
 		build();
 
-		Debug.Log("Om: " + om);
+//		Debug.Log("Om: " + om);
 		for(int i = 0; i < _pointList.Count; i++)
 		{
 			_pointList[i] = new Vector3(_pointList[i].x,om.calcPoint(_pointList[i]).y,_pointList[i].z );

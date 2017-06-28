@@ -59,7 +59,7 @@ public class BoatController : MonoBehaviour {
 	
 		public float slamForceMultiplier = 5000.0f;
 
-		public float Rho = 1000;
+		public float Rho = 1027;
 
 		[Range(3,9)]
 		public int WaterpatchDimRows = 5;
@@ -230,6 +230,11 @@ public class BoatController : MonoBehaviour {
 		foreach(SubmergedTriangle tri in _submergedTriangleList) {
 			_totalSubmergedArea += tri._area;
 			//Vector3 force = checkForceIsValid(_forceFactor * (tri._depth) * tri._area * tri._normal.normalized, "buoyancy force"); 
+			
+			if(tri._area < 0.000001f) {
+				Debug.Log("Area too small!");
+				continue;
+			}
 			Vector3 force = _forceFactor * (tri._depth) * tri._area * tri._normal.normalized; 
 			tri._forceVector = force;
 			// calc hydrostatic force
@@ -245,11 +250,11 @@ public class BoatController : MonoBehaviour {
 			_totalForceVector += force;
 			_commonCenterOfApplication += tri._pointOfApplication;
 		}
+		
 
 		_commonCenterOfApplication /= _submergedTriangleList.Count;
 	//	_totalForceVector /= _submergedTriangleList.Count;
 	}
-
 
 	private void calcBuoyancy() {
 		_waterPatch.updateCenter(getCenterWorldPosition(), _oceanManager);
@@ -313,13 +318,6 @@ public class BoatController : MonoBehaviour {
 					break;
 			}	
 		}
-	}
-
-	private void calcSlamForce() {}
-
-
-	private void calcDragForce() {
-
 	}
 
 	private void calcWaterLine(Transform t, MeshTriangle mt, List<SubmergedTriangle> submergedTriangleList, List<WaterlinePair> waterLinePoints ) {
@@ -394,11 +392,12 @@ public class BoatController : MonoBehaviour {
 			Vector3 IH = L + tl * LH;
 
 			Triangle tri = new Triangle(IM,IH,L);
-			Vector3 normal3 = calculateNormal(IM, M, L);
+			Vector3 normal3 = calculateNormal(IM, IH, L);
 			if(! (normal == normal3))
 			{
 				normal3 *= -1;
 			}
+		
 			_submergedTriangleList.Add(new SubmergedTriangle(tri.Centroid, normal3, getDistanceToWaterpatch(tri.Centroid), tri));
 		
 			waterLinePoints.Add(new WaterlinePair(IM, IH));
@@ -560,6 +559,10 @@ public class BoatController : MonoBehaviour {
 
 	private Vector3 calculateNormal(Triangle t) {
 		return calculateNormal(t.Vertex1, t.Vertex2, t.Vertex3);
+	}
+
+	private Vector3 calculateNormal2(Vector3 v1, Vector3 v2, Vector3 v3) {
+		return -Vector3.Cross(v2 - v1, v3 - v1).normalized;
 	}
 
 	private Vector3 calculateNormal(Vector3 v1, Vector3 v2, Vector3 v3) {
