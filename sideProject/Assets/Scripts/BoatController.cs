@@ -59,9 +59,17 @@ public class BoatController : MonoBehaviour {
 		public Vector3 p1;
 		public Vector3 p2;
 
+		public bool marked = false;
+
 		public LinePair(Vector3 v1, Vector3 v2) {
 			p1 = v1;
 			p2 = v2;
+		}
+
+		public LinePair(Vector3 v1, Vector3 v2, bool mark) {
+			p1 = v1;
+			p2 = v2;
+			marked = mark;
 		}
 	}
 
@@ -348,8 +356,8 @@ public class BoatController : MonoBehaviour {
 		if(L.Depth > 0) return;
 
 		// case 1:
-		if( L.Depth <= 0 && M.Depth <= 0 && H.Depth >= 0) 
-		//if( L.Depth < 0 && H.Depth > 0) 
+		//if( L.Depth <= 0 && M.Depth <= 0 && H.Depth >= 0) 
+		if( M.Depth < 0 && H.Depth > 0) 
 		{
 			float tm = -M.Depth / (H.Depth - M.Depth);
 			float tl = -L.Depth / (H.Depth - L.Depth);
@@ -379,8 +387,8 @@ public class BoatController : MonoBehaviour {
 			_waterLinePoints.Add(new LinePair(IM, IL));
 		}
 		// case 2:
-		if( L.Depth < 0 &&  M.Depth > 0 && H.Depth >= 0) {
-		//if( L.Depth < 0 &&  M.Depth > 0) {
+		//if( L.Depth < 0 &&  M.Depth > 0 && H.Depth >= 0) {
+		if( L.Depth < 0 &&  M.Depth > 0) {
 			float tm = -L.Depth / (M.Depth - L.Depth);
 			float tl = -L.Depth / (H.Depth - L.Depth);
 
@@ -413,16 +421,41 @@ public class BoatController : MonoBehaviour {
 			Debug.Assert(L.Depth < M.Depth, "cutTriangles: hL > hM!");
 			Debug.Assert(M.Depth < H.Depth, "cutTriangles: hM > hH!");
 
-			Vector3 pos = H.Position + ((L.Position - H.Position) * (H.Position.y - M.Position.y) / (H.Position.y - L.Position.y));
+			Vector3 pos = H.Position + (L.Position - H.Position) * ((H.Position.y - M.Position.y) / (H.Position.y - L.Position.y));
+			
+		//	Debug.Log((H.Position.y - M.Position.y) / (H.Position.y - L.Position.y));
+			
 			float depth = getDistanceToWaterpatch(pos);
 			BVertex cutVertex = new BVertex(pos, depth);
 
-			_triangleCutLinePoints.Add(new LinePair(M.Position, cutVertex.Position));
+			LinePair lp = new LinePair(M.Position, cutVertex.Position);
+
+			//if(Mathf.Approximately(H.Position.y - M.Position.y, 0 )) {
+			//if(Mathf.Approximately(H.Position.y - M.Position.y, 0 )) {
+			if((H.Position.y - M.Position.y) / (H.Position.y - L.Position.y) > 1 || (H.Position.y - M.Position.y) / (H.Position.y - L.Position.y) < 0)
+			{
+				Debug.Log(" 0 : " + (H.Position.y - M.Position.y));
+				lp.marked = true;
+			}
+			
+			_triangleCutLinePoints.Add(lp);
 			// horizontal pointing up 
-			_submergedTriangleList.Add(new SubmergedTriangle(L, cutVertex, M, normal));
+			SubmergedTriangle tri1 = new SubmergedTriangle(L, cutVertex, M, normal);
+			Vector3 medianPoint = (cutVertex.Position + M.Position) / 2;
+			Vector3 medianLine = L.Position - medianPoint;
+			float height = Mathf.Abs(L.Position.y - medianPoint.y);
+			tri1.ForceCenter = medianPoint + medianLine * (2 * Mathf.Abs(medianPoint.y) + height) / (6 * Mathf.Abs(medianPoint.y) + 2 * height);
+
+			_submergedTriangleList.Add(tri1);
 
 			// horizontal pointing down
-			_submergedTriangleList.Add(new SubmergedTriangle(H, cutVertex, M, normal));
+			SubmergedTriangle tri2 = new SubmergedTriangle(H, cutVertex, M, normal);
+			medianPoint = (cutVertex.Position + M.Position) / 2;
+			medianLine = medianPoint - H.Position;
+			height = Mathf.Abs(H.Position.y - medianPoint.y);
+			tri2.ForceCenter = H.Position + medianLine * (4 * Mathf.Abs(H.Depth) + 3 * height) / (6 * Mathf.Abs(H.Depth) + 4 * height);
+
+			_submergedTriangleList.Add(tri2);
 		}
 		else 
 		{
@@ -582,7 +615,7 @@ public class BoatController : MonoBehaviour {
 			foreach(LinePair pair in _triangleCutLinePoints) {
 				Gizmos.color = Color.yellow;
 				Gizmos.DrawLine(pair.p1, pair.p2);
-				Gizmos.color = Color.cyan;
+				Gizmos.color = pair.marked ?  Color.red : Color.green;
 				Gizmos.DrawSphere(pair.p2, 0.025f);
 			}
 		}
