@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 /**
 * Implementation follows: http://www.gamasutra.com/view/news/237528/Water_interaction_model_for_boats_in_video_games.php
  */
@@ -10,7 +11,7 @@ public class BoatController : MonoBehaviour {
 	class BVertex {
 		public Vector3 Position = Vector3.zero;
 		public float Depth = 0.0f;
-
+		
 		public BVertex(Vector3 pos) {
 			Position = pos;
 		}
@@ -36,7 +37,6 @@ public class BoatController : MonoBehaviour {
 
 		public Vector3 _normal;
 	
-//		public float _depth = 1.0f;
 		public float _area;
 
 		public SubmergedTriangle(BVertex A, BVertex B, BVertex C, Vector3 normal) {
@@ -55,11 +55,11 @@ public class BoatController : MonoBehaviour {
 		}
 	}
 
-	class WaterlinePair {
+	class LinePair {
 		public Vector3 p1;
 		public Vector3 p2;
 
-		public WaterlinePair(Vector3 v1, Vector3 v2) {
+		public LinePair(Vector3 v1, Vector3 v2) {
 			p1 = v1;
 			p2 = v2;
 		}
@@ -121,6 +121,10 @@ public class BoatController : MonoBehaviour {
 		public bool ShowVertexHeight = true;
 
 		public bool ShowTriangles = true;
+
+		public bool RefineTriangles = true;
+
+		public bool ShowTriangleCuts = true;
 	}
 
 	public SimulationSettings SimSettings = new SimulationSettings();
@@ -136,12 +140,15 @@ public class BoatController : MonoBehaviour {
 	private Mesh _boatMesh = null;
 
 	private string _debugMsg = "";
+	private string _debugMsgFixedUpdate = "";
 
 	private WaterPatch _waterPatch = new WaterPatch();
 
 	public OceanManager _oceanManager;
 
-	private List<WaterlinePair> _waterLinePoints = new List<WaterlinePair>();
+	private List<LinePair> _waterLinePoints = new List<LinePair>();
+
+	private List<LinePair> _triangleCutLinePoints = new List<LinePair>();
 	private List<SubmergedTriangle> _submergedTriangleList = new List<SubmergedTriangle>();
 
 	private Rigidbody _rigidBody;
@@ -160,8 +167,6 @@ public class BoatController : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		Application.targetFrameRate = 30;
-
 		_rigidBody = this.GetComponent<Rigidbody>();
 	
 		Mesh boatMesh = this.GetComponent<MeshFilter>().mesh;
@@ -172,7 +177,6 @@ public class BoatController : MonoBehaviour {
 
 		_sentinelSphere =  GameObject.Find("SentinelSphere");
 
-		int triangleId = 1;
 		for (int i = 0; i < boatMesh.triangles.Length; i += 3)
 		{
     		Vector3 p1 = boatMesh.vertices[boatMesh.triangles[i + 0]];
@@ -191,7 +195,7 @@ public class BoatController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	/*	_waterGrid.Clear();
+		/*	_waterGrid.Clear();
 		_waterGrid.
 		// calc grid points
 		for(int i = 0; i < waterPatchDimX * waterPatchDimY; i++) {
@@ -202,6 +206,8 @@ public class BoatController : MonoBehaviour {
 		float start = Time.realtimeSinceStartup;
 		calcBuoyancy();
 
+
+		//_debugMsg = "BoatController - update: " + string.Format(".3f%", Time.realtimeSinceStartup - start);
 		_debugMsg = "BoatController - update: " + (Time.realtimeSinceStartup - start);
 
 		if( Input.GetKeyDown(KeyCode.D))
@@ -225,6 +231,8 @@ public class BoatController : MonoBehaviour {
 
 
 	public void FixedUpdate() {
+		float start = Time.realtimeSinceStartup;
+
 		_totalSubmergedArea = 0.0f;
 		_totalForceVector = Vector3.zero;
 		_commonCenterOfApplication = Vector3.zero;
@@ -260,6 +268,8 @@ public class BoatController : MonoBehaviour {
 		
 		_commonCenterOfApplication /= _submergedTriangleList.Count;
 	//	_totalForceVector /= _submergedTriangleList.Count;
+
+		_debugMsgFixedUpdate = "FixedUpdate: " + (Time.realtimeSinceStartup - start);
 	}
 
 	private void calcBuoyancy() {
@@ -267,6 +277,7 @@ public class BoatController : MonoBehaviour {
 //		Debug.Log("OM1: " + _oceanManager);
 		_waterLinePoints.Clear();
 		_submergedTriangleList.Clear();
+		_triangleCutLinePoints.Clear();
 	
 		Transform t = this.transform;
 				
@@ -310,11 +321,7 @@ public class BoatController : MonoBehaviour {
 			{
 				// totally submerged triangles
 				case 3:
-					_submergedTriangleList.Add(new SubmergedTriangle(
-						new BVertex(v1_transformed, getDistanceToWaterpatch(v1_transformed)), 
-						new BVertex(v2_transformed, getDistanceToWaterpatch(v2_transformed)), 
-						new BVertex(v3_transformed, getDistanceToWaterpatch(v3_transformed)), 
-						normal));
+					cutTriangle(v1_transformed, v2_transformed, v3_transformed, normal);
 					break;
 				// partially submerged triangles - need to be cut
 				case 2:
@@ -332,40 +339,10 @@ public class BoatController : MonoBehaviour {
 		BVertex H = new BVertex(v1);
 		BVertex M = new BVertex(v2);
 		BVertex L = new BVertex(v3);
-		BVertex temp = new BVertex(new Vector3());
+		sortVertices(ref H, ref M, ref L);
 
-		float hH = getDistanceToWaterpatch(H.Position);
-		float hM = getDistanceToWaterpatch(M.Position);
-		float hL = getDistanceToWaterpatch(L.Position);
-
-		H.Depth = hH;
-		M.Depth = hM;
-		L.Depth = hL;
-
-		if(M.Depth > H.Depth)
-		{
-			temp = H;
-			H = M;
-			M = temp;
-		}
-		if (L.Depth > H.Depth ){
-			temp = H;
-			H = L;
-			L = temp;
-		}
-		if(L.Depth > M.Depth) 
-		{
-			temp = M;
-			M = L;
-			L = temp;
-		}
-
-		if(L.Depth > M.Depth) {
-			Debug.Log("hL > hM!");
-		}
-		if(M.Depth > H.Depth) {
-			Debug.Log("hM > hH!");
-		}
+		Debug.Assert(L.Depth < M.Depth, "calcWaterLine: hL > hM!");
+		Debug.Assert(M.Depth < H.Depth, "calcWaterLine: hM > hH!");
 	
 		// no vertices under water
 		if(L.Depth > 0) return;
@@ -383,8 +360,6 @@ public class BoatController : MonoBehaviour {
 			Vector3 IM = M.Position + tm * MH;
 			Vector3 IL = L.Position + tl * LH;
 
-
-			//Triangle t1 = new Triangle(IM,M,L);
 			Vector3 normal1 = calculateNormal(IM, M.Position, L.Position);
 			if(! (origNormal == normal1))
 			{
@@ -393,9 +368,6 @@ public class BoatController : MonoBehaviour {
 
 			cutTriangle(IM, M.Position, L.Position, normal1);
 			
-			_submergedTriangleList.Add(new SubmergedTriangle(new BVertex(IM, getDistanceToWaterpatch(IM)), 
-				new BVertex(M.Position, getDistanceToWaterpatch(M.Position)), new BVertex(L.Position, getDistanceToWaterpatch(L.Position)), normal1));
-			
 			Vector3 normal2 = calculateNormal(IL, IM, L.Position);
 			if(! (origNormal == normal2))
 			{
@@ -403,10 +375,8 @@ public class BoatController : MonoBehaviour {
 			}
 			
 			cutTriangle(IL, IM, L.Position, normal2);
-			_submergedTriangleList.Add(new SubmergedTriangle(new BVertex(IL,getDistanceToWaterpatch(IL) ), 
-				new BVertex(IM,getDistanceToWaterpatch(IM) ), new BVertex(L.Position,getDistanceToWaterpatch(L.Position) ), normal2));
 
-			_waterLinePoints.Add(new WaterlinePair(IM, IL));
+			_waterLinePoints.Add(new LinePair(IM, IL));
 		}
 		// case 2:
 		if( L.Depth < 0 &&  M.Depth > 0 && H.Depth >= 0) {
@@ -428,19 +398,41 @@ public class BoatController : MonoBehaviour {
 
 			cutTriangle(IH, IM, L.Position, normal3);
 		
-			_submergedTriangleList.Add(new SubmergedTriangle(new BVertex(IM,getDistanceToWaterpatch(IM) ), 
-				new BVertex(IH,getDistanceToWaterpatch(IH) ), new BVertex(L.Position,getDistanceToWaterpatch(L.Position) ), normal3));
-		
-			_waterLinePoints.Add(new WaterlinePair(IM, IH));
+			_waterLinePoints.Add(new LinePair(IM, IH));
 		}
-
 	}
 
 	private void cutTriangle(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 normal) {
-		// do the sort dance again
 		BVertex H = new BVertex(v1);
 		BVertex M = new BVertex(v2);
 		BVertex L = new BVertex(v3);
+	
+		if(DebugSet.RefineTriangles) {
+			sortVertices(ref H, ref M, ref L);
+
+			Debug.Assert(L.Depth < M.Depth, "cutTriangles: hL > hM!");
+			Debug.Assert(M.Depth < H.Depth, "cutTriangles: hM > hH!");
+
+			Vector3 pos = H.Position + ((L.Position - H.Position) * (H.Position.y - M.Position.y) / (H.Position.y - L.Position.y));
+			float depth = getDistanceToWaterpatch(pos);
+			BVertex cutVertex = new BVertex(pos, depth);
+
+			_triangleCutLinePoints.Add(new LinePair(M.Position, cutVertex.Position));
+			// horizontal pointing up 
+			_submergedTriangleList.Add(new SubmergedTriangle(L, cutVertex, M, normal));
+
+			// horizontal pointing down
+			_submergedTriangleList.Add(new SubmergedTriangle(H, cutVertex, M, normal));
+		}
+		else 
+		{
+			//_submergedTriangleList.Add(new SubmergedTriangle(new BVertex(v1,getDistanceToWaterpatch(v1) ), 
+			//	new BVertex(v2,getDistanceToWaterpatch(v2) ), new BVertex(v3,getDistanceToWaterpatch(v3) ), normal));
+			_submergedTriangleList.Add(new SubmergedTriangle(H, M, L, normal));
+		}
+	}
+
+	private void sortVertices(ref BVertex H, ref BVertex M, ref BVertex L) {
 		BVertex temp = new BVertex(new Vector3());
 
 		float hH = getDistanceToWaterpatch(H.Position);
@@ -468,18 +460,6 @@ public class BoatController : MonoBehaviour {
 			M = L;
 			L = temp;
 		}
-
-		if(L.Depth > M.Depth) {
-			Debug.Log("hL > hM!");
-		}
-		if(M.Depth > H.Depth) {
-			Debug.Log("hM > hH!");
-		}
-
-
-
-		//_submergedTriangleList.Add(new SubmergedTriangle(new BVertex(IM, getDistanceToWaterpatch(IM)), 
-		//		new BVertex(M, getDistanceToWaterpatch(M)), new BVertex(L, getDistanceToWaterpatch(L)), normal1));
 	}
 
 	private float getDistanceToWaterpatch(Vector3 point) {
@@ -580,7 +560,8 @@ public class BoatController : MonoBehaviour {
 				Gizmos.DrawLine(tri.ForceCenter, tri.ForceCenter + (-1.0f *  tri.Force.magnitude ) * tri.Force.normalized);
 		//		Gizmos.DrawLine(tri.ForceCenter, tri.ForceCenter + (-1.0f *  tri._forceVector.magnitude / maxForce ) * tri._forceVector.normalized);
 			//	maxForce = Mathf.Max(maxForce, tri._forceVector.magnitude);
-				Debug.Log("F: " + tri.Force);
+			
+			//	Debug.Log("F: " + tri.Force);
 			}
 		}
 		
@@ -588,22 +569,25 @@ public class BoatController : MonoBehaviour {
 		if(DebugSet.ShowTotalForce) {
 			Gizmos.color = DrawingUtil.Cyan;
 			Gizmos.DrawSphere(_commonCenterOfApplication, 0.25f);
-			//Debug.Log(_commonCenterOfApplication);
 			Gizmos.DrawLine(_commonCenterOfApplication, _commonCenterOfApplication + 1.0f * _totalForceVector);
 		}
 
 		if(DebugSet.ShowWaterLine) {
-			foreach(WaterlinePair pair in _waterLinePoints) {
+			foreach(LinePair pair in _waterLinePoints) {
 				Gizmos.DrawLine(pair.p1, pair.p2);
 			}
 		}
-		
 
-		
+		if(DebugSet.ShowTriangleCuts) {
+			foreach(LinePair pair in _triangleCutLinePoints) {
+				Gizmos.color = Color.yellow;
+				Gizmos.DrawLine(pair.p1, pair.p2);
+				Gizmos.color = Color.cyan;
+				Gizmos.DrawSphere(pair.p2, 0.025f);
+			}
+		}
+			
 		Vector3 center = getCenterWorldPosition();
-	
-	//	Gizmos.color = Color.red;
-	//	Gizmos.DrawWireSphere(new Vector3(center.x,center.y + 1, center.z), 0.025f);
 
 		if(DebugSet.ShowWaterPatch) {
 			// draw waterPatch wire
@@ -645,10 +629,6 @@ public class BoatController : MonoBehaviour {
 		return this.transform.TransformPoint(_boatMeshCenter);
 	}
 
-	void OnGUI() {
- //		GUI.Label (new Rect (0,0,100,50), _debugMsg);
-	}
-
 	private Vector3 calculateNormal(Triangle t) {
 		return calculateNormal(t.Vertex1, t.Vertex2, t.Vertex3);
 	}
@@ -674,12 +654,16 @@ public class BoatController : MonoBehaviour {
         }
     }
 
-
 	private bool isForceValid(Vector3 force, string forceName) {
 		 if (float.IsNaN(force.x + force.y + force.z))
         {
             return false;
         }
 		return true;
+	}
+
+	void OnGUI() {
+ 		GUI.Label (new Rect (0,0,100,50), _debugMsg);
+		GUI.Label (new Rect (0,100,100,50), _debugMsgFixedUpdate);
 	}
 }

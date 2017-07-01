@@ -255,6 +255,46 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &595620073
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 595620075}
+  - component: {fileID: 595620074}
+  m_Layer: 0
+  m_Name: GlobalSettings
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &595620074
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 595620073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6854a37aec59f34ba62b0bf4706f1ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &595620075
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 595620073}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -11.946217, y: -0.2751443, z: 4.621211}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 9
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &688232561
 GameObject:
   m_ObjectHideFlags: 0
@@ -342,7 +382,7 @@ MonoBehaviour:
   wave1:
     Q: 0
     WaveLength: 1.7
-    Amplitude: 0.72
+    Amplitude: 0.01
     Direction: {x: 0, y: 1}
     Speed: 2
   wave2:
@@ -494,6 +534,8 @@ MonoBehaviour:
     ShowTotalForce: 0
     ShowVertexHeight: 1
     ShowTriangles: 1
+    RefineTriangles: 1
+    ShowTriangleCuts: 1
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 0}
 --- !u!43 &831440726
@@ -675,6 +717,8 @@ MonoBehaviour:
     ShowTotalForce: 0
     ShowVertexHeight: 1
     ShowTriangles: 1
+    RefineTriangles: 1
+    ShowTriangleCuts: 1
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 0}
 --- !u!23 &1320907932
@@ -898,7 +942,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1394594686}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -12.22, y: 0.542, z: 4.91}
+  m_LocalPosition: {x: -12.22, y: 0.979, z: 4.91}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1799928989}
@@ -935,6 +979,8 @@ MonoBehaviour:
     ShowTotalForce: 0
     ShowVertexHeight: 0
     ShowTriangles: 1
+    RefineTriangles: 1
+    ShowTriangleCuts: 1
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 688232565}
 --- !u!23 &1394594689
@@ -1233,6 +1279,8 @@ MonoBehaviour:
     ShowTotalForce: 0
     ShowVertexHeight: 0
     ShowTriangles: 0
+    RefineTriangles: 1
+    ShowTriangleCuts: 1
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 688232565}
 --- !u!54 &2112857731
