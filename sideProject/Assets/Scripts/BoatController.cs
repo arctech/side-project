@@ -26,32 +26,42 @@ public class BoatController : MonoBehaviour {
 		public BVertex A;
 		public BVertex B;
 		public BVertex C;
-
-		private float Area;
-
-		public BVertex Center;
+		private BVertex _center;
 		public Vector3 ForceCenter;
-		public Vector3 Normal;
+		private Vector3 _normal;
 
 		public Vector3 Force;
 
-		public Vector3 _normal;
-	
-		public float _area;
+		private float _area;
 
 		public SubmergedTriangle(BVertex A, BVertex B, BVertex C, Vector3 normal) {
 			this.A = A;
 			this.B = B;
 			this.C = C;
 
-			Center = new BVertex(1.0f / 3.0f *  (A.Position + B.Position + C.Position));
-			ForceCenter = Center.Position;
+			_center = new BVertex(1.0f / 3.0f *  (A.Position + B.Position + C.Position));
+			
 			_normal = normal;
+		
+			_area = MathUtil.calcTriangleArea(A.Position, B.Position, C.Position);
+		}
 
-			 Vector3 ab = B.Position - A.Position; 
-       		 Vector3 ac = C.Position - A.Position;
-			 float len = ab.magnitude * ac.magnitude;
-        	_area = (len * Mathf.Sin(Vector3.Angle(ab, ac) * Mathf.Deg2Rad)) / 2f;
+		public Vector3 Normal  {
+			get {
+				return _normal;
+			}
+		}
+
+		public BVertex Center {
+			get {
+				return _center;
+			}
+		}
+
+		public float Area {
+			get {
+				return _area;
+			}
 		}
 	}
 
@@ -169,9 +179,11 @@ public class BoatController : MonoBehaviour {
 
 	private float _totalSubmergedArea = 0.0f;
 
-	private float _forceFactor = 1.0f;	// - rho * gravity
+	private float _forcePreFactor = 1.0f;	// - rho * gravity
 
 	private List<Vector3> _waterGrid = new List<Vector3>();
+
+	private float _initialArea = 0.0f;
 
 	// Use this for initialization
 	void Start () {
@@ -190,6 +202,9 @@ public class BoatController : MonoBehaviour {
     		Vector3 p1 = boatMesh.vertices[boatMesh.triangles[i + 0]];
     		Vector3 p2 = boatMesh.vertices[boatMesh.triangles[i + 1]];
     		Vector3 p3 = boatMesh.vertices[boatMesh.triangles[i + 2]];
+
+			_initialArea += MathUtil.calcTriangleArea(p1, p2, p3);
+
 			_meshTriangleList.Add(new MeshTriangle(new Triangle(p1, p2, p3), calculateNormal(p1, p2, p3)));	
 		}
 		_boatMeshCenter = _boatMesh.bounds.center;
@@ -197,8 +212,7 @@ public class BoatController : MonoBehaviour {
 		_waterPatch.init(getCenterWorldPosition(), WaterpatchScaleFactor * boatMeshDiagLength, SimSettings.WaterpatchDimRows);
 		_waterPatch.build();
 
-		// force pre-factor
-		_forceFactor = -(SimSettings.Rho * Physics.gravity.y);
+		_forcePreFactor = -(SimSettings.Rho * Physics.gravity.y);
 	}
 	
 	// Update is called once per frame
@@ -244,29 +258,37 @@ public class BoatController : MonoBehaviour {
 		_totalSubmergedArea = 0.0f;
 		_totalForceVector = Vector3.zero;
 		_commonCenterOfApplication = Vector3.zero;
+
+		//Vector3 pointVel = _rigidBody.GetPointVelocity(pos);
+
 		//foreach(SubmergedTriangle tri in _submergedTriangleList) {
 		for(int i = 0; i < _submergedTriangleList.Count; i++) {	
 			SubmergedTriangle tri = _submergedTriangleList[i];
-			_totalSubmergedArea += tri._area;
+			_totalSubmergedArea += tri.Area;
 			//Vector3 force = checkForceIsValid(_forceFactor * (tri._depth) * tri._area * tri._normal.normalized, "buoyancy force"); 
 			
-			if(tri._area < 0.000001f) {
-				Debug.Log("Area too small!");
+			if(tri.Area < 0.000001f || float.IsNaN(tri.Area) ) {
+				Debug.Log("Calculating Force: Area invalid: " + tri.Area);
 				continue;
 			}
-			Vector3 force = _forceFactor * (getDistanceToWaterpatch( tri.ForceCenter)) * tri._area * tri._normal.normalized; 
-//			Debug.Log("F: " + force);
-
+			Vector3 force = _forcePreFactor * (tri.Center.Depth) * tri.Area * tri.Normal; 
 			tri.Force = force;
-	//		Debug.Log("F: " + force + " tri: " + _submergedTriangleList[i].Force);
+			if( Mathf.Approximately(force.magnitude, 0.0f) && isForceValid(force, "buoyancy force")) {
+				Debug.Log("Hydrostatic force is invalid: " + force);
+			}
+		
 			// calc hydrostatic force
 			if( SimSettings.ApplyForce) {
 				if(SimSettings.UseVerticalForceOnly) { 
 					force.x = 0.0f;
 					force.z = 0.0f;
 				}
-				if( !Mathf.Approximately(force.sqrMagnitude, 0.0f) && isForceValid(force, "buoyancy force")) {
+				if( !Mathf.Approximately(force.magnitude, 0.0f) && isForceValid(force, "buoyancy force")) {
 					_rigidBody.AddForceAtPosition(force, tri.ForceCenter);			
+				}
+				else
+				{
+					Debug.Log("Hydrostatic force is invalid: " + force);
 				}
 			}
 			
@@ -275,9 +297,11 @@ public class BoatController : MonoBehaviour {
 		}
 		
 		_commonCenterOfApplication /= _submergedTriangleList.Count;
-	//	_totalForceVector /= _submergedTriangleList.Count;
 
 		_debugMsgFixedUpdate = "FixedUpdate: " + (Time.realtimeSinceStartup - start);
+		
+	//	Debug.Log("Total force: " + _totalForceVector.magnitude);
+		Debug.Assert(_totalSubmergedArea <= _initialArea, "Submerged area must be smaller than total area: total: " +  _totalSubmergedArea + " submerged: " + _initialArea);
 	}
 
 	private void calcBuoyancy() {
@@ -431,10 +455,9 @@ public class BoatController : MonoBehaviour {
 			LinePair lp = new LinePair(M.Position, cutVertex.Position);
 
 			//if(Mathf.Approximately(H.Position.y - M.Position.y, 0 )) {
-			//if(Mathf.Approximately(H.Position.y - M.Position.y, 0 )) {
 			if((H.Position.y - M.Position.y) / (H.Position.y - L.Position.y) > 1 || (H.Position.y - M.Position.y) / (H.Position.y - L.Position.y) < 0)
 			{
-				Debug.Log(" 0 : " + (H.Position.y - M.Position.y));
+//				Debug.Log(" 0 : " + (H.Position.y - M.Position.y));
 				lp.marked = true;
 			}
 			
@@ -445,7 +468,8 @@ public class BoatController : MonoBehaviour {
 			Vector3 medianLine = L.Position - medianPoint;
 			float height = Mathf.Abs(L.Position.y - medianPoint.y);
 			tri1.ForceCenter = medianPoint + medianLine * (2 * Mathf.Abs(medianPoint.y) + height) / (6 * Mathf.Abs(medianPoint.y) + 2 * height);
-
+			tri1.Center.Depth = getDistanceToWaterpatch(tri1.Center.Position);
+		
 			_submergedTriangleList.Add(tri1);
 
 			// horizontal pointing down
@@ -454,14 +478,19 @@ public class BoatController : MonoBehaviour {
 			medianLine = medianPoint - H.Position;
 			height = Mathf.Abs(H.Position.y - medianPoint.y);
 			tri2.ForceCenter = H.Position + medianLine * (4 * Mathf.Abs(H.Depth) + 3 * height) / (6 * Mathf.Abs(H.Depth) + 4 * height);
-
+			tri2.Center.Depth = getDistanceToWaterpatch(tri2.Center.Position);
+	
 			_submergedTriangleList.Add(tri2);
 		}
 		else 
 		{
 			//_submergedTriangleList.Add(new SubmergedTriangle(new BVertex(v1,getDistanceToWaterpatch(v1) ), 
 			//	new BVertex(v2,getDistanceToWaterpatch(v2) ), new BVertex(v3,getDistanceToWaterpatch(v3) ), normal));
-			_submergedTriangleList.Add(new SubmergedTriangle(H, M, L, normal));
+			SubmergedTriangle tri = new SubmergedTriangle(H, M, L, normal);
+			tri.Center.Depth = getDistanceToWaterpatch(tri.Center.Position);
+			tri.ForceCenter = tri.Center.Position;
+
+			_submergedTriangleList.Add(tri);
 		}
 	}
 
@@ -546,10 +575,11 @@ public class BoatController : MonoBehaviour {
 		}
 
 		foreach(SubmergedTriangle tri in _submergedTriangleList) {
-
+			
 			if(DebugSet.ShowSubmergedVolume) {
-				Color col = new Color(0.0f, tri._area / _totalSubmergedArea, 0.0f, 1.0f);
-				//Debug.Log( tri._area / _totalSubmergedArea);
+				float factor = tri.Area / _totalSubmergedArea * 100;
+				Color col = new Color(0.0f, factor, 0.0f, 1.0f);
+			//	Debug.Log( "Tri.Area / TotalSubmergedArea" + tri.Area + " / " + _totalSubmergedArea + " " +  factor);
 				//GLUtil.RenderTriangle(tri._triangle, DrawingUtil.LimeGreen * tri._area / _totalSubmergedArea);
 				GLUtil.RenderTriangle(tri.A.Position,tri.B.Position,tri.C.Position, col);
 			}
@@ -572,18 +602,20 @@ public class BoatController : MonoBehaviour {
 				//Vector3 E = t.TransformPoint(tri._pointOfApplication + 0.1f * tri._normal);
 				//Vector3 A = tri._pointOfApplication;
 				//Vector3 E = tri._pointOfApplication + 0.1f * tri._normal;
-				Gizmos.DrawLine(tri.Center.Position,tri.Center.Position + 0.1f * tri._normal);
+				Gizmos.DrawLine(tri.Center.Position,tri.Center.Position + 0.1f * tri.Normal);
 				Gizmos.DrawSphere(tri.Center.Position, 0.005f);
 			}
 
 			if(DebugSet.ShowVertexHeight) {
-				Gizmos.color = Color.blue;
+				Gizmos.color = Color.cyan;
 				Gizmos.DrawLine(tri.ForceCenter, new Vector3(tri.ForceCenter.x, tri.ForceCenter.y - getDistanceToWaterpatch(tri.ForceCenter), tri.ForceCenter.z ));
 
-				Gizmos.color = Color.gray;
-				Gizmos.DrawLine(tri.A.Position, new Vector3(tri.A.Position.x, tri.A.Position.y - tri.A.Depth, tri.A.Position.z ));
-				Gizmos.DrawLine(tri.B.Position, new Vector3(tri.B.Position.x, tri.B.Position.y - tri.B.Depth, tri.B.Position.z ));
-				Gizmos.DrawLine(tri.C.Position, new Vector3(tri.C.Position.x, tri.C.Position.y - tri.C.Depth, tri.C.Position.z ));
+				Gizmos.color = Color.red;
+				Gizmos.DrawLine(tri.Center.Position, new Vector3(tri.Center.Position.x, tri.Center.Position.y - tri.Center.Depth, tri.Center.Position.z ));
+
+			//	Gizmos.DrawLine(tri.A.Position, new Vector3(tri.A.Position.x, tri.A.Position.y - tri.A.Depth, tri.A.Position.z ));
+			//	Gizmos.DrawLine(tri.B.Position, new Vector3(tri.B.Position.x, tri.B.Position.y - tri.B.Depth, tri.B.Position.z ));
+			//	Gizmos.DrawLine(tri.C.Position, new Vector3(tri.C.Position.x, tri.C.Position.y - tri.C.Depth, tri.C.Position.z ));
 			}
 
 			if(DebugSet.ShowForce) {
@@ -594,10 +626,9 @@ public class BoatController : MonoBehaviour {
 		//		Gizmos.DrawLine(tri.ForceCenter, tri.ForceCenter + (-1.0f *  tri._forceVector.magnitude / maxForce ) * tri._forceVector.normalized);
 			//	maxForce = Mathf.Max(maxForce, tri._forceVector.magnitude);
 			
-			//	Debug.Log("F: " + tri.Force);
+		//		Debug.Log("F: " + tri.Force);
 			}
 		}
-		
 		
 		if(DebugSet.ShowTotalForce) {
 			Gizmos.color = DrawingUtil.Cyan;
@@ -615,8 +646,11 @@ public class BoatController : MonoBehaviour {
 			foreach(LinePair pair in _triangleCutLinePoints) {
 				Gizmos.color = Color.yellow;
 				Gizmos.DrawLine(pair.p1, pair.p2);
-				Gizmos.color = pair.marked ?  Color.red : Color.green;
-				Gizmos.DrawSphere(pair.p2, 0.025f);
+			
+				if(pair.marked)  {
+					Gizmos.color = pair.marked ?  Color.red : Color.green;
+					Gizmos.DrawSphere(pair.p2, 0.025f);
+				}
 			}
 		}
 			

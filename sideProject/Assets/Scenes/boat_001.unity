@@ -942,7 +942,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1394594686}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -12.22, y: 0.979, z: 4.91}
+  m_LocalPosition: {x: -12.269344, y: 1.3562587, z: 4.814552}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1799928989}
@@ -960,7 +960,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SimSettings:
-    ApplyForce: 1
+    ApplyForce: 0
     UseDragForce: 1
     UseSlamForce: 1
     UseVerticalForceOnly: 1
@@ -979,7 +979,7 @@ MonoBehaviour:
     ShowTotalForce: 0
     ShowVertexHeight: 0
     ShowTriangles: 1
-    RefineTriangles: 1
+    RefineTriangles: 0
     ShowTriangleCuts: 1
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 688232565}
@@ -1048,7 +1048,7 @@ Rigidbody:
   m_Mass: 100
   m_Drag: 0
   m_AngularDrag: 0.05
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
@@ -1183,7 +1183,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!23 &2112857726
 MeshRenderer:
   m_ObjectHideFlags: 0
