@@ -103,10 +103,6 @@ public class OceanManager : MonoBehaviour {
 		
 	}
 
-	public void FixedUpdate() {
-		
-	}
-
 	public Vector3 calcPoint(Vector3 pointWS) {
 		GerstnerResult gw1 = calcGerstnerWave(pointWS, wave1.Q, wave1.Amplitude, wave1.Direction, wave1.WaveLength, wave1.Speed ); 
 		GerstnerResult gw2 = calcGerstnerWave(pointWS, wave2.Q, wave2.Amplitude, wave2.Direction, wave2.WaveLength, wave2.Speed ); 

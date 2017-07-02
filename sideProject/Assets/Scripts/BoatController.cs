@@ -146,19 +146,19 @@ public class BoatController : MonoBehaviour {
 
 		public bool ShowSubmergedVolume = true;
 
-		public bool ShowNormalsSubmerged = true;
+		public bool ShowNormalsSubmerged = false;
 
-		public bool ShowForce = true;
+		public bool ShowForce = false;
 
 		public bool ShowWaterPatch = true;
 
-		public bool ShowNormalsOriginalMesh = true;
+		public bool ShowNormalsOriginalMesh = false;
 
 		public bool ShowTotalForce = false;
 
-		public bool ShowVertexHeight = true;
+		public bool ShowVertexHeight = false;
 
-		public bool ShowTriangles = true;
+		public bool ShowTriangles = false;
 
 		public bool RefineTriangles = true;
 
@@ -240,18 +240,7 @@ public class BoatController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		/*	_waterGrid.Clear();
-		_waterGrid.
-		// calc grid points
-		for(int i = 0; i < waterPatchDimX * waterPatchDimY; i++) {
-
-		}
-*/
-
 		float start = Time.realtimeSinceStartup;
-	//	calcBuoyancy();
-
-
 		//_debugMsg = "BoatController - update: " + string.Format(".3f%", Time.realtimeSinceStartup - start);
 		_debugMsg = "BoatController - update: " + (Time.realtimeSinceStartup - start);
 
