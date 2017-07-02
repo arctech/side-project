@@ -23,27 +23,25 @@ public class BoatController : MonoBehaviour {
 	}
 
 	class SubmergedTriangle {
-		public BVertex A;
-		public BVertex B;
-		public BVertex C;
+		private BVertex _A;
+		private BVertex _B;
+		private BVertex _C;
 		private BVertex _center;
 		public Vector3 ForceCenter;
-		private Vector3 _normal;
-
 		public Vector3 Force;
-
+		private Vector3 _normal;
 		private float _area;
 
 		public SubmergedTriangle(BVertex A, BVertex B, BVertex C, Vector3 normal) {
-			this.A = A;
-			this.B = B;
-			this.C = C;
+			this._A = A;
+			this._B = B;
+			this._C = C;
 
-			_center = new BVertex(1.0f / 3.0f *  (A.Position + B.Position + C.Position));
+			_center = new BVertex(1.0f / 3.0f *  (_A.Position + _B.Position + _C.Position));
 			
 			_normal = normal;
 		
-			_area = MathUtil.calcTriangleArea(A.Position, B.Position, C.Position);
+			_area = MathUtil.calcTriangleArea(_A.Position, _B.Position, _C.Position);
 		}
 
 		public Vector3 Normal  {
@@ -61,6 +59,25 @@ public class BoatController : MonoBehaviour {
 		public float Area {
 			get {
 				return _area;
+			}
+		}
+
+		public BVertex A
+		{
+			get {
+				return _A;
+			}
+		}
+		public BVertex B
+		{
+			get {
+				return _B;
+			}
+		}
+		public BVertex C
+		{
+			get {
+				return _C;
 			}
 		}
 	}
@@ -109,13 +126,16 @@ public class BoatController : MonoBehaviour {
 	
 		public float slamForceMultiplier = 5000.0f;
 
-		public float Rho = 1027;
+		public float Rho = 1027.0f;
 
 		[Range(3,9)]
 		public int WaterpatchDimRows = 5;
 
 		[Range(3,9)]
 		public int WaterpatchDimCols = 5;
+
+		[Range(0.1f,2)]
+		public float DensityCorrectionModifier = .2f;
 	}
 
 	[System.Serializable]
@@ -143,6 +163,8 @@ public class BoatController : MonoBehaviour {
 		public bool RefineTriangles = true;
 
 		public bool ShowTriangleCuts = true;
+
+		public bool PrintWarnings = false;
 	}
 
 	public SimulationSettings SimSettings = new SimulationSettings();
@@ -185,6 +207,7 @@ public class BoatController : MonoBehaviour {
 
 	private float _initialArea = 0.0f;
 
+
 	// Use this for initialization
 	void Start () {
 		_rigidBody = this.GetComponent<Rigidbody>();
@@ -211,7 +234,7 @@ public class BoatController : MonoBehaviour {
 
 		_waterPatch.init(getCenterWorldPosition(), WaterpatchScaleFactor * boatMeshDiagLength, SimSettings.WaterpatchDimRows);
 		_waterPatch.build();
-
+		
 		_forcePreFactor = -(SimSettings.Rho * Physics.gravity.y);
 	}
 	
@@ -226,7 +249,7 @@ public class BoatController : MonoBehaviour {
 */
 
 		float start = Time.realtimeSinceStartup;
-		calcBuoyancy();
+	//	calcBuoyancy();
 
 
 		//_debugMsg = "BoatController - update: " + string.Format(".3f%", Time.realtimeSinceStartup - start);
@@ -242,10 +265,8 @@ public class BoatController : MonoBehaviour {
 		/*if( Input.GetKeyDown(KeyCode.W))
 		{
 			_waterPatchCellWidth = Mathf.Min(_waterPatchCellWidth + waterPatchIncrement, 20.0f);	
-			Debug.Log(_waterPatchCellWidth);
 			buildWaterpatch();
 		} else if(Input.GetKeyDown(KeyCode.S)) {
-			Debug.Log(_waterPatchCellWidth);
 			buildWaterpatch();
 			_waterPatchCellWidth = Mathf.Max(_waterPatchCellWidth - waterPatchIncrement, 1.0f);	
 		}*/
@@ -255,6 +276,7 @@ public class BoatController : MonoBehaviour {
 	public void FixedUpdate() {
 		float start = Time.realtimeSinceStartup;
 
+		calcBuoyancy();
 		_totalSubmergedArea = 0.0f;
 		_totalForceVector = Vector3.zero;
 		_commonCenterOfApplication = Vector3.zero;
@@ -267,14 +289,14 @@ public class BoatController : MonoBehaviour {
 			_totalSubmergedArea += tri.Area;
 			//Vector3 force = checkForceIsValid(_forceFactor * (tri._depth) * tri._area * tri._normal.normalized, "buoyancy force"); 
 			
-			if(tri.Area < 0.000001f || float.IsNaN(tri.Area) ) {
-				Debug.Log("Calculating Force: Area invalid: " + tri.Area);
-				continue;
+			if(tri.Area < 0.00001f || float.IsNaN(tri.Area) ) {
+			//	Debug.Log("Calculating Force: Area invalid: " + tri.Area);
+			//	continue;
 			}
-			Vector3 force = _forcePreFactor * (tri.Center.Depth) * tri.Area * tri.Normal; 
+			Vector3 force = _forcePreFactor * (tri.Center.Depth) * tri.Area * tri.Normal  * SimSettings.DensityCorrectionModifier; 
 			tri.Force = force;
 			if( Mathf.Approximately(force.magnitude, 0.0f) && isForceValid(force, "buoyancy force")) {
-				Debug.Log("Hydrostatic force is invalid: " + force);
+				debugLog("Hydrostatic force is invalid: " + force);
 			}
 		
 			// calc hydrostatic force
@@ -286,27 +308,26 @@ public class BoatController : MonoBehaviour {
 				if( !Mathf.Approximately(force.magnitude, 0.0f) && isForceValid(force, "buoyancy force")) {
 					_rigidBody.AddForceAtPosition(force, tri.ForceCenter);			
 				}
-				else
-				{
-					Debug.Log("Hydrostatic force is invalid: " + force);
-				}
 			}
 			
 			_totalForceVector += force;
 			_commonCenterOfApplication += tri.ForceCenter;
 		}
-		
+
 		_commonCenterOfApplication /= _submergedTriangleList.Count;
 
 		_debugMsgFixedUpdate = "FixedUpdate: " + (Time.realtimeSinceStartup - start);
-		
-	//	Debug.Log("Total force: " + _totalForceVector.magnitude);
-		Debug.Assert(_totalSubmergedArea <= _initialArea, "Submerged area must be smaller than total area: total: " +  _totalSubmergedArea + " submerged: " + _initialArea);
+				
+		if( _totalSubmergedArea > _initialArea) {
+			float areaDiff = _totalSubmergedArea - _initialArea;
+			if(areaDiff > 1e-3) {
+				debugLog("Submerged area must be smaller than total area: submerged: " +  _totalSubmergedArea + " initial: " + _initialArea);
+			}
+		}
 	}
 
 	private void calcBuoyancy() {
 		_waterPatch.updateCenter(getCenterWorldPosition(), _oceanManager);
-//		Debug.Log("OM1: " + _oceanManager);
 		_waterLinePoints.Clear();
 		_submergedTriangleList.Clear();
 		_triangleCutLinePoints.Clear();
@@ -440,24 +461,46 @@ public class BoatController : MonoBehaviour {
 		BVertex L = new BVertex(v3);
 	
 		if(DebugSet.RefineTriangles) {
-			sortVertices(ref H, ref M, ref L);
+			BVertex temp = new BVertex(new Vector3());
+			if(M.Position.y > H.Position.y)
+			{
+				temp = H;
+				H = M;
+				M = temp;
+			}
+			if (L.Position.y > H.Position.y ){
+				temp = H;
+				H = L;
+				L = temp;
+			}
+			if(L.Position.y > M.Position.y) 
+			{
+				temp = M;
+				M = L;
+				L = temp;
+			}
 
-			Debug.Assert(L.Depth < M.Depth, "cutTriangles: hL > hM!");
-			Debug.Assert(M.Depth < H.Depth, "cutTriangles: hM > hH!");
+			float factor = H.Position.y - L.Position.y;
+			float factor2 = H.Position.y - M.Position.y;
+			if(Mathf.Approximately(factor, 0)) {
+				debugLog(" factor1 == 0: " + H.Position.y + " - " + L.Position.y + " -> " + factor/ factor2);
+			}
 
+			if(Mathf.Approximately(factor2, 0)) {
+				debugLog(" factor2 == 0: " + H.Position.y + " - " + M.Position.y + " -> " + factor/ factor2);
+			}
 			Vector3 pos = H.Position + (L.Position - H.Position) * ((H.Position.y - M.Position.y) / (H.Position.y - L.Position.y));
-			
-		//	Debug.Log((H.Position.y - M.Position.y) / (H.Position.y - L.Position.y));
-			
+		
 			float depth = getDistanceToWaterpatch(pos);
 			BVertex cutVertex = new BVertex(pos, depth);
 
 			LinePair lp = new LinePair(M.Position, cutVertex.Position);
 
 			//if(Mathf.Approximately(H.Position.y - M.Position.y, 0 )) {
-			if((H.Position.y - M.Position.y) / (H.Position.y - L.Position.y) > 1 || (H.Position.y - M.Position.y) / (H.Position.y - L.Position.y) < 0)
+			float parametrization = (H.Position.y - M.Position.y) / (H.Position.y - L.Position.y);
+			if(parametrization > 1 || parametrization < 0)
 			{
-//				Debug.Log(" 0 : " + (H.Position.y - M.Position.y));
+				debugLog(" parametrization in triangle cutting out of raange " + parametrization);
 				lp.marked = true;
 			}
 			
@@ -581,11 +624,11 @@ public class BoatController : MonoBehaviour {
 				Color col = new Color(0.0f, factor, 0.0f, 1.0f);
 			//	Debug.Log( "Tri.Area / TotalSubmergedArea" + tri.Area + " / " + _totalSubmergedArea + " " +  factor);
 				//GLUtil.RenderTriangle(tri._triangle, DrawingUtil.LimeGreen * tri._area / _totalSubmergedArea);
-				GLUtil.RenderTriangle(tri.A.Position,tri.B.Position,tri.C.Position, col);
+				GLUtil.RenderTriangle(tri.A.Position, tri.B.Position, tri.C.Position, col);
 			}
 
 			if(DebugSet.ShowTriangles) {
-				DrawingUtil.DrawTriangle(tri.A.Position,tri.B.Position,tri.C.Position, Color.white);
+				DrawingUtil.DrawTriangle(tri.A.Position, tri.B.Position, tri.C.Position, Color.white);
 
 				float offset = 0.01f;
 				Gizmos.color = Color.blue;
@@ -594,6 +637,7 @@ public class BoatController : MonoBehaviour {
 				Gizmos.DrawSphere(tri.B.Position  - (tri.B.Position - tri.Center.Position).normalized * 3 * offset, offset);
 				Gizmos.color = Color.red;
 				Gizmos.DrawSphere(tri.C.Position  - (tri.C.Position - tri.Center.Position).normalized * 3 * offset, offset);
+			//	Gizmos.DrawSphere(tri.Center.Position, 0.005f);
 			}
 
 			if(DebugSet.ShowNormalsSubmerged) {
@@ -603,7 +647,6 @@ public class BoatController : MonoBehaviour {
 				//Vector3 A = tri._pointOfApplication;
 				//Vector3 E = tri._pointOfApplication + 0.1f * tri._normal;
 				Gizmos.DrawLine(tri.Center.Position,tri.Center.Position + 0.1f * tri.Normal);
-				Gizmos.DrawSphere(tri.Center.Position, 0.005f);
 			}
 
 			if(DebugSet.ShowVertexHeight) {
@@ -625,8 +668,8 @@ public class BoatController : MonoBehaviour {
 				Gizmos.DrawLine(tri.ForceCenter, tri.ForceCenter + (-1.0f *  tri.Force.magnitude ) * tri.Force.normalized);
 		//		Gizmos.DrawLine(tri.ForceCenter, tri.ForceCenter + (-1.0f *  tri._forceVector.magnitude / maxForce ) * tri._forceVector.normalized);
 			//	maxForce = Mathf.Max(maxForce, tri._forceVector.magnitude);
-			
-		//		Debug.Log("F: " + tri.Force);
+				Gizmos.color = Color.red;
+				Gizmos.DrawSphere(tri.Center.Position, 0.005f);
 			}
 		}
 		
@@ -654,8 +697,6 @@ public class BoatController : MonoBehaviour {
 			}
 		}
 			
-		Vector3 center = getCenterWorldPosition();
-
 		if(DebugSet.ShowWaterPatch) {
 			// draw waterPatch wire
 			Gizmos.color = Color.blue;
@@ -716,7 +757,6 @@ public class BoatController : MonoBehaviour {
         }
         else
         {
-            Debug.Log(forceName += " force is NaN");
             return Vector3.zero;
         }
     }
@@ -730,7 +770,11 @@ public class BoatController : MonoBehaviour {
 	}
 
 	void OnGUI() {
- 		GUI.Label (new Rect (0,0,100,50), _debugMsg);
+ 	//	GUI.Label (new Rect (0,0,100,50), _debugMsg);
 		GUI.Label (new Rect (0,100,100,50), _debugMsgFixedUpdate);
+	}
+
+	private void debugLog(string msg) {
+	  	if(DebugSet.PrintWarnings) Debug.Log(this.name + " -> " + msg);
 	}
 }

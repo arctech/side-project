@@ -173,6 +173,143 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 46.102, y: -82.123, z: -52.352}
+--- !u!1 &271374026
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 271374032}
+  - component: {fileID: 271374031}
+  - component: {fileID: 271374030}
+  - component: {fileID: 271374029}
+  - component: {fileID: 271374028}
+  - component: {fileID: 271374027}
+  m_Layer: 0
+  m_Name: Cylinder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &271374027
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 271374026}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ecff92119268644fbe691421a0dfe1d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SimSettings:
+    ApplyForce: 1
+    UseDragForce: 1
+    UseSlamForce: 1
+    UseVerticalForceOnly: 1
+    slamForceMultiplier: 5000
+    Rho: 1027
+    WaterpatchDimRows: 5
+    WaterpatchDimCols: 5
+    DensityCorrectionModifier: 0.552
+  DebugSet:
+    ShowDebug: 1
+    ShowWaterLine: 1
+    ShowSubmergedVolume: 1
+    ShowNormalsSubmerged: 1
+    ShowForce: 1
+    ShowWaterPatch: 1
+    ShowNormalsOriginalMesh: 1
+    ShowTotalForce: 0
+    ShowVertexHeight: 1
+    ShowTriangles: 1
+    RefineTriangles: 1
+    ShowTriangleCuts: 1
+    PrintWarnings: 0
+  WaterpatchScaleFactor: 1.5
+  _oceanManager: {fileID: 688232565}
+--- !u!54 &271374028
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 271374026}
+  serializedVersion: 2
+  m_Mass: 100
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!23 &271374029
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 271374026}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_Materials:
+  - {fileID: 2100000, guid: a0bf237d41fdfd740b27126037d49ec0, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_PreserveUVs: 1
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+--- !u!136 &271374030
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 271374026}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!33 &271374031
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 271374026}
+  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &271374032
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 271374026}
+  m_LocalRotation: {x: -0.09337618, y: -0.068516426, z: -0.07905926, w: 0.9901192}
+  m_LocalPosition: {x: 5.153, y: 0.476, z: 12.953}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 10
+  m_LocalEulerAnglesHint: {x: -11.288, y: -7.083, z: -8.43}
 --- !u!1 &309250526
 GameObject:
   m_ObjectHideFlags: 0
@@ -382,13 +519,13 @@ MonoBehaviour:
   wave1:
     Q: 0
     WaveLength: 1.7
-    Amplitude: 0.01
+    Amplitude: 0.21
     Direction: {x: 0, y: 1}
     Speed: 2
   wave2:
     Q: 3.33
     WaveLength: 1
-    Amplitude: 0.31
+    Amplitude: 0.01
     Direction: {x: 1, y: 0}
     Speed: 0
   wave3:
@@ -433,7 +570,7 @@ Rigidbody:
   m_Mass: 200
   m_Drag: 0
   m_AngularDrag: 0.05
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
@@ -523,21 +660,23 @@ MonoBehaviour:
     Rho: 1000
     WaterpatchDimRows: 5
     WaterpatchDimCols: 5
+    DensityCorrectionModifier: 0.2
   DebugSet:
     ShowDebug: 1
-    ShowWaterLine: 1
-    ShowSubmergedVolume: 1
-    ShowNormalsSubmerged: 1
-    ShowForce: 1
+    ShowWaterLine: 0
+    ShowSubmergedVolume: 0
+    ShowNormalsSubmerged: 0
+    ShowForce: 0
     ShowWaterPatch: 1
-    ShowNormalsOriginalMesh: 1
+    ShowNormalsOriginalMesh: 0
     ShowTotalForce: 0
-    ShowVertexHeight: 1
+    ShowVertexHeight: 0
     ShowTriangles: 1
     RefineTriangles: 1
     ShowTriangleCuts: 1
+    PrintWarnings: 0
   WaterpatchScaleFactor: 1.5
-  _oceanManager: {fileID: 0}
+  _oceanManager: {fileID: 688232565}
 --- !u!43 &831440726
 Mesh:
   m_ObjectHideFlags: 0
@@ -698,7 +837,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SimSettings:
-    ApplyForce: 0
+    ApplyForce: 1
     UseDragForce: 1
     UseSlamForce: 1
     UseVerticalForceOnly: 1
@@ -706,21 +845,23 @@ MonoBehaviour:
     Rho: 1000
     WaterpatchDimRows: 5
     WaterpatchDimCols: 5
+    DensityCorrectionModifier: 0.73
   DebugSet:
     ShowDebug: 1
     ShowWaterLine: 1
     ShowSubmergedVolume: 1
-    ShowNormalsSubmerged: 1
+    ShowNormalsSubmerged: 0
     ShowForce: 1
     ShowWaterPatch: 1
-    ShowNormalsOriginalMesh: 1
+    ShowNormalsOriginalMesh: 0
     ShowTotalForce: 0
-    ShowVertexHeight: 1
+    ShowVertexHeight: 0
     ShowTriangles: 1
     RefineTriangles: 1
     ShowTriangleCuts: 1
+    PrintWarnings: 0
   WaterpatchScaleFactor: 1.5
-  _oceanManager: {fileID: 0}
+  _oceanManager: {fileID: 688232565}
 --- !u!23 &1320907932
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -734,7 +875,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: a0bf237d41fdfd740b27126037d49ec0, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -778,13 +919,13 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1320907930}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 25.81, y: 0.18, z: -8.7}
+  m_LocalRotation: {x: -0, y: -0, z: -0.094212726, w: 0.9955521}
+  m_LocalPosition: {x: 25.81, y: 0.97, z: -8.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -10.812}
 --- !u!54 &1320907936
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -813,7 +954,6 @@ GameObject:
   - component: {fileID: 1371550738}
   - component: {fileID: 1371550737}
   - component: {fileID: 1371550736}
-  - component: {fileID: 1371550742}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -903,18 +1043,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 84.052, z: 0}
---- !u!114 &1371550742
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1371550735}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 379eb7bda32c5f54ba2041e7b611a676, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _fov: 0
 --- !u!1 &1394594686
 GameObject:
   m_ObjectHideFlags: 0
@@ -942,7 +1070,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1394594686}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -12.269344, y: 1.3562587, z: 4.814552}
+  m_LocalPosition: {x: -12.269344, y: 0.64, z: 4.814552}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1799928989}
@@ -960,7 +1088,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SimSettings:
-    ApplyForce: 0
+    ApplyForce: 1
     UseDragForce: 1
     UseSlamForce: 1
     UseVerticalForceOnly: 1
@@ -968,12 +1096,13 @@ MonoBehaviour:
     Rho: 1000
     WaterpatchDimRows: 7
     WaterpatchDimCols: 7
+    DensityCorrectionModifier: 0.1
   DebugSet:
     ShowDebug: 1
     ShowWaterLine: 0
-    ShowSubmergedVolume: 0
-    ShowNormalsSubmerged: 1
-    ShowForce: 1
+    ShowSubmergedVolume: 1
+    ShowNormalsSubmerged: 0
+    ShowForce: 0
     ShowWaterPatch: 0
     ShowNormalsOriginalMesh: 0
     ShowTotalForce: 0
@@ -981,6 +1110,7 @@ MonoBehaviour:
     ShowTriangles: 1
     RefineTriangles: 0
     ShowTriangleCuts: 1
+    PrintWarnings: 0
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 688232565}
 --- !u!23 &1394594689
@@ -1048,7 +1178,7 @@ Rigidbody:
   m_Mass: 100
   m_Drag: 0
   m_AngularDrag: 0.05
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
@@ -1183,7 +1313,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!23 &2112857726
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1260,14 +1390,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SimSettings:
-    ApplyForce: 0
+    ApplyForce: 1
     UseDragForce: 1
     UseSlamForce: 1
     UseVerticalForceOnly: 1
     slamForceMultiplier: 5000
-    Rho: 1000
+    Rho: 1024
     WaterpatchDimRows: 5
     WaterpatchDimCols: 5
+    DensityCorrectionModifier: 1.04
   DebugSet:
     ShowDebug: 1
     ShowWaterLine: 1
@@ -1275,12 +1406,13 @@ MonoBehaviour:
     ShowNormalsSubmerged: 1
     ShowForce: 1
     ShowWaterPatch: 1
-    ShowNormalsOriginalMesh: 1
+    ShowNormalsOriginalMesh: 0
     ShowTotalForce: 0
     ShowVertexHeight: 0
     ShowTriangles: 0
-    RefineTriangles: 1
+    RefineTriangles: 0
     ShowTriangleCuts: 1
+    PrintWarnings: 0
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 688232565}
 --- !u!54 &2112857731
@@ -1293,7 +1425,7 @@ Rigidbody:
   m_Mass: 100
   m_Drag: 0
   m_AngularDrag: 0.05
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
