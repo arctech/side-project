@@ -214,6 +214,7 @@ MonoBehaviour:
     WaterpatchDimRows: 5
     WaterpatchDimCols: 5
     DensityCorrectionModifier: 0.552
+    Damping_Methods: 0
   DebugSet:
     ShowDebug: 1
     ShowWaterLine: 1
@@ -661,6 +662,7 @@ MonoBehaviour:
     WaterpatchDimRows: 5
     WaterpatchDimCols: 5
     DensityCorrectionModifier: 0.2
+    Damping_Methods: 0
   DebugSet:
     ShowDebug: 1
     ShowWaterLine: 0
@@ -837,7 +839,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SimSettings:
-    ApplyForce: 1
+    ApplyForce: 0
     UseDragForce: 1
     UseSlamForce: 1
     UseVerticalForceOnly: 1
@@ -846,6 +848,7 @@ MonoBehaviour:
     WaterpatchDimRows: 5
     WaterpatchDimCols: 5
     DensityCorrectionModifier: 0.73
+    Damping_Methods: 0
   DebugSet:
     ShowDebug: 1
     ShowWaterLine: 1
@@ -936,7 +939,7 @@ Rigidbody:
   m_Mass: 1
   m_Drag: 0
   m_AngularDrag: 0.05
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
@@ -1097,6 +1100,7 @@ MonoBehaviour:
     WaterpatchDimRows: 7
     WaterpatchDimCols: 7
     DensityCorrectionModifier: 0.1
+    Damping_Methods: 0
   DebugSet:
     ShowDebug: 1
     ShowWaterLine: 0
@@ -1399,6 +1403,7 @@ MonoBehaviour:
     WaterpatchDimRows: 5
     WaterpatchDimCols: 5
     DensityCorrectionModifier: 1.04
+    Damping_Methods: 0
   DebugSet:
     ShowDebug: 1
     ShowWaterLine: 1
@@ -1422,7 +1427,7 @@ Rigidbody:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2112857725}
   serializedVersion: 2
-  m_Mass: 50
+  m_Mass: 1
   m_Drag: 0
   m_AngularDrag: 0.05
   m_UseGravity: 1

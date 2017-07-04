@@ -136,6 +136,8 @@ public class BoatController : MonoBehaviour {
 
 		[Range(0.1f,2)]
 		public float DensityCorrectionModifier = .2f;
+
+		public DampingMethod Damping_Methods = DampingMethod.Linear;
 	}
 
 	[System.Serializable]
@@ -165,6 +167,13 @@ public class BoatController : MonoBehaviour {
 		public bool ShowTriangleCuts = true;
 
 		public bool PrintWarnings = false;
+	}
+
+	[System.Serializable]
+	public enum DampingMethod {
+		Linear,
+		Quadratic
+	
 	}
 
 	public SimulationSettings SimSettings = new SimulationSettings();
@@ -266,6 +275,8 @@ public class BoatController : MonoBehaviour {
 		float start = Time.realtimeSinceStartup;
 
 		calcBuoyancy();
+		buildWaterLineMesh();
+
 		_totalSubmergedArea = 0.0f;
 		_totalForceVector = Vector3.zero;
 		_commonCenterOfApplication = Vector3.zero;
@@ -588,6 +599,10 @@ public class BoatController : MonoBehaviour {
 		return distance;
 	}
 
+	private void buildWaterLineMesh() {
+		
+	}
+
 	void OnDrawGizmos() {
 		if(! DebugSet.ShowDebug)
 		{
@@ -666,6 +681,10 @@ public class BoatController : MonoBehaviour {
 			Gizmos.color = DrawingUtil.Cyan;
 			Gizmos.DrawSphere(_commonCenterOfApplication, 0.25f);
 			Gizmos.DrawLine(_commonCenterOfApplication, _commonCenterOfApplication + 1.0f * _totalForceVector);
+		
+		
+			Gizmos.color = DrawingUtil.Orange;
+			Gizmos.DrawSphere(transform.position + transform.rotation * _rigidBody.centerOfMass, 0.25f);
 		}
 
 		if(DebugSet.ShowWaterLine) {

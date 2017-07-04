@@ -9,6 +9,8 @@ public class DrawingUtil  {
     public static Color LimeGreen = new Color(0,255,0);
     public static Color CornflowerBlue = new Color(100,149,237);
 
+    public static Color Orange = new Color(255,128,0);
+
     public static void DrawText(GUISkin guiSkin, string text, Vector3 position, Color? color = null, int fontSize = 0, float yOffset = 0)
     {
 #if UNITY_EDITOR
