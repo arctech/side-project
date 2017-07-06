@@ -116,6 +116,8 @@ public class BoatController : MonoBehaviour {
 	public class SimulationSettings {
 		public bool ApplyForce = false;
 
+		public bool ApplyViscousForce = false;
+
 		public bool UseDragForce = true;
 
 		public bool UseSlamForce = true;
@@ -169,7 +171,6 @@ public class BoatController : MonoBehaviour {
 	public enum DampingMethod {
 		Linear,
 		Quadratic
-	
 	}
 
 	public SimulationSettings SimSettings = new SimulationSettings();
@@ -213,7 +214,6 @@ public class BoatController : MonoBehaviour {
 	private List<Vector3> _waterGrid = new List<Vector3>();
 
 	private float _initialArea = 0.0f;
-
 
 	// Use this for initialization
 	void Start () {
@@ -297,16 +297,10 @@ public class BoatController : MonoBehaviour {
 			//	Debug.Log("Calculating Force: Area invalid: " + tri.Area);
 			//	continue;
 			}
+			
 			Vector3 force = _forcePreFactor * (tri.Center.Depth) * tri.Area * tri.Normal  * SimSettings.DensityCorrectionModifier; 
 			tri.Force = force.normalized;				
 
-			// calc velocity
-			Vector3 centerOfMassVel = _rigidBody.velocity;
-			Vector3 centerOfMassAngularVel = _rigidBody.angularVelocity;
-			Vector3 centerToCog = tri.Center.Position - _rigidBody.centerOfMass;
-			Vector3 velocityDir = (centerOfMassVel + Vector3.Cross(centerOfMassAngularVel, centerToCog)).normalized;
-	
-			tri.Velocity = velocityDir;
 			if( Mathf.Approximately(force.magnitude, 0.0f) && isForceValid(force, "buoyancy force")) {
 				debugLog("Hydrostatic force is invalid: " + force);
 			}
@@ -319,6 +313,22 @@ public class BoatController : MonoBehaviour {
 				}
 				if( !Mathf.Approximately(force.magnitude, 0.0f) && isForceValid(force, "buoyancy force")) {
 					_rigidBody.AddForceAtPosition(force, tri.ForceCenter);			
+				}
+			}
+
+			// calc velocity
+			Vector3 centerOfMassVel = _rigidBody.velocity;
+			Vector3 centerOfMassAngularVel = _rigidBody.angularVelocity;
+			Vector3 centerToCog = tri.Center.Position - _rigidBody.centerOfMass;
+			Vector3 velocityDir = (centerOfMassVel + Vector3.Cross(centerOfMassAngularVel, centerToCog)).normalized;
+			tri.Velocity = velocityDir;
+
+			Vector3 viscousForce = Vector3.zero;
+			if(SimSettings.ApplyViscousForce) 
+			{
+				if(checkForce(viscousForce)) 
+				{
+					
 				}
 			}
 			
@@ -772,17 +782,13 @@ public class BoatController : MonoBehaviour {
 		return Vector3.Cross(AB, CB).normalized;
 	}
 
-	 //Check that a force is not NaN
-    private static Vector3 checkForceIsValid(Vector3 force, string forceName)
+    private bool checkForce(Vector3 force)
     {
-        if (!float.IsNaN(force.x + force.y + force.z))
+	    if (float.IsNaN(force.x + force.y + force.z) || force == Vector3.zero)
         {
-            return force;
+            return false;
         }
-        else
-        {
-            return Vector3.zero;
-        }
+       return true;
     }
 
 	private bool isForceValid(Vector3 force, string forceName) {

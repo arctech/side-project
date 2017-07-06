@@ -8,6 +8,8 @@ Shader "OceanShader"
 		_AppTime ("AppTime", Float) = 1
 		_LineColor ("LineColor", Color) = (1,1,1,1)
 		_FillColor ("FillColor", Color) = (0,0,0,0)
+		_SkyColor ("SkyColor", Color) = (1,1,1,1)
+		//_SunDirection("SunDirection". Float) = 
 		_WireThickness ("Wire Thickness", RANGE(0, 800)) = 100
 		[MaterialToggle] UseDiscard("Discard Fill", Float) = 1
 		[MaterialToggle] ShowWireframe("Show Wireframe", Float) = 1
@@ -64,6 +66,7 @@ Shader "OceanShader"
 			#include "UnityCG.cginc"
 
 			float _WireThickness;
+			float _SkyColor;
 			float _Wavelength_1;
 			float _Wavespeed_1;
 			float _Amplitude_1;
@@ -136,7 +139,8 @@ Shader "OceanShader"
 			sinWave calcGerstnerWave(float3 posWS, float Q, float amplitude, float4 direction, float waveLength, float speed) {
 				float2 dirNormalized = normalize(float2(direction.x / 256, direction.y / 256));	
 				float w = 2 / waveLength;
-				float Qi = Q / (w * amplitude * 6.28318530718 * 4); // not in paper - multiply with 2pi
+				float Qi = Q / (w * amplitude);
+			//	float Qi = Q / (w * amplitude * 6.28318530718 * 4); // not in paper - multiply with 2pi
 				float phi = speed * w;
 				//float term = w * dot(dirNormalized, posWS.xz) + _Time.x * phi;
 				float term = w * dot(dirNormalized, posWS.xz) + _AppTime * phi;
@@ -183,8 +187,8 @@ Shader "OceanShader"
 				o.worldSpacePosition = float4(posWS, 1);
 				o.normal = float4(-normalSum.x, 1 - normalSum.y, -normalSum.z,1);
 				
-				float dist = distance(posWS.xz, float2(0,0));
-				o.normal = normalize(float4(v.vertex.x, 0, 0, 1));
+			//	float dist = distance(posWS.xz, float2(0,0));
+			//	o.normal = normalize(float4(v.vertex.x, 0, 0, 1));
 			//	o.normal = v.normals;
 			
 				return o;
@@ -241,11 +245,20 @@ Shader "OceanShader"
 			{
 				float minDistanceToEdge = min(i.dist[0], min(i.dist[1], i.dist[2])) * i.dist[3];
 
-				#ifdef SHOWNORMALS_ON
-					//return float4(i.normal.xyz * 0.5 + 0.5, 1);
-					return float4(i.normal.xyz, 1);
-				#endif
+				float3 wPos = float3(i.worldSpacePosition.x, i.worldSpacePosition.y, i.worldSpacePosition.z);
+				float3 view = _WorldSpaceCameraPos - wPos;
+				float fresnel = 0.02 + 0.98 * pow(1.0 - dot(i.normal, view), 5.0);
 
+				//_SkyColor
+
+				#ifdef SHOWNORMALS_ON
+					return float4(i.normal.xyz * 0.5 + 0.5, 1);
+					//return float4(i.normal.xyz, 1);
+				#endif
+				
+				
+				
+				
 				#ifdef SHOWWIREFRAME_ON 
 					// Early out if we know we are not on a line segment.
 					if(minDistanceToEdge > 0.9)
@@ -259,7 +272,10 @@ Shader "OceanShader"
 					return _LineColor;
 				
 				#else 
-					return _LineColor;
+
+					//return float4(view, 1.0f);
+
+					return _FillColor;
 				#endif		
 
 			//	return float4(i.normals.xyz * 0.5 + 0.5, 1);
