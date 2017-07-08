@@ -192,7 +192,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &271374027
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -205,12 +205,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SimSettings:
-    ApplyForce: 1
-    ApplyViscousForce: 0
+    ApplyHydrostaticForce: 1
+    ApplyViscousForce: 1
+    ApplyDragForce: 1
+    ApplySlamForce: 1
     UseDragForce: 1
     UseSlamForce: 1
     UseVerticalForceOnly: 1
-    slamForceMultiplier: 5000
+    ViscousDragCoefficient: 0.5
+    DragCoefficient: {x: 10, y: 1, z: 0.25}
+    SuctionCoefficient: {x: 1, y: 0.1, z: 0.25}
+    SlamForceMultiplier: 5000
     Rho: 1027
     WaterpatchDimRows: 5
     WaterpatchDimCols: 5
@@ -218,9 +223,9 @@ MonoBehaviour:
     Damping_Methods: 0
   DebugSet:
     ShowDebug: 1
-    ShowTriangleDetails: 1
-    ShowWaterLine: 1
-    ShowSubmergedVolume: 1
+    ShowTriangleDetails: 0
+    ShowWaterLine: 0
+    ShowSubmergedVolume: 0
     ShowWaterPatch: 1
     ShowNormalsOriginalMesh: 0
     ShowTotalForce: 0
@@ -305,7 +310,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 271374026}
   m_LocalRotation: {x: -0.09337618, y: -0.068516426, z: -0.07905926, w: 0.9901192}
-  m_LocalPosition: {x: 5.153, y: 0.476, z: 12.953}
+  m_LocalPosition: {x: 9.94, y: 2.53, z: 13.13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -449,7 +454,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 1
   m_IsActive: 1
 --- !u!23 &688232562
 MeshRenderer:
@@ -497,7 +502,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 688232561}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.29, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -518,15 +523,15 @@ MonoBehaviour:
   dim: 50
   showDebug: 0
   wave1:
-    Q: 2
-    WaveLength: 1.7
-    Amplitude: 1.4
+    Q: 1
+    WaveLength: 0.31
+    Amplitude: 0.51
     Direction: {x: 1, y: 1}
-    Speed: 2
+    Speed: 0.3
   wave2:
     Q: 0.66
     WaveLength: 1
-    Amplitude: 0.54
+    Amplitude: 0.01
     Direction: {x: 1, y: -2.23}
     Speed: 0
   wave3:
@@ -560,7 +565,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!54 &750683758
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -568,10 +573,10 @@ Rigidbody:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 750683757}
   serializedVersion: 2
-  m_Mass: 200
+  m_Mass: 40
   m_Drag: 0
   m_AngularDrag: 0.05
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
@@ -635,7 +640,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 750683757}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -47, y: 3.8862681, z: -1.2945613}
+  m_LocalPosition: {x: -20.38, y: 3.06, z: -1.2945613}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -653,29 +658,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SimSettings:
-    ApplyForce: 0
-    ApplyViscousForce: 0
+    ApplyHydrostaticForce: 1
+    ApplyViscousForce: 1
+    ApplyDragForce: 1
+    ApplySlamForce: 1
     UseDragForce: 1
     UseSlamForce: 1
     UseVerticalForceOnly: 1
-    slamForceMultiplier: 5000
+    ViscousDragCoefficient: 0.005
+    DragCoefficient: {x: 10, y: 1, z: 0.25}
+    SuctionCoefficient: {x: 1, y: 0.1, z: 0.25}
+    SlamForceMultiplier: 5000
     Rho: 1000
     WaterpatchDimRows: 5
     WaterpatchDimCols: 5
-    DensityCorrectionModifier: 0.2
+    DensityCorrectionModifier: 0.68
     Damping_Methods: 0
   DebugSet:
     ShowDebug: 1
-    ShowTriangleDetails: 1
-    ShowWaterLine: 0
+    ShowTriangleDetails: 0
+    ShowWaterLine: 1
     ShowSubmergedVolume: 0
     ShowWaterPatch: 1
     ShowNormalsOriginalMesh: 0
     ShowTotalForce: 0
     ShowVertexHeight: 0
-    ShowTriangles: 1
+    ShowTriangles: 0
     RefineTriangles: 1
-    ShowTriangleCuts: 1
+    ShowTriangleCuts: 0
     PrintWarnings: 0
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 688232565}
@@ -921,12 +931,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SimSettings:
-    ApplyForce: 0
-    ApplyViscousForce: 0
+    ApplyHydrostaticForce: 1
+    ApplyViscousForce: 1
+    ApplyDragForce: 1
+    ApplySlamForce: 1
     UseDragForce: 1
     UseSlamForce: 1
     UseVerticalForceOnly: 1
-    slamForceMultiplier: 5000
+    ViscousDragCoefficient: 0.5
+    DragCoefficient: {x: 10, y: 1, z: 0.25}
+    SuctionCoefficient: {x: 1, y: 0.1, z: 0.25}
+    SlamForceMultiplier: 5000
     Rho: 1000
     WaterpatchDimRows: 5
     WaterpatchDimCols: 5
@@ -934,9 +949,9 @@ MonoBehaviour:
     Damping_Methods: 0
   DebugSet:
     ShowDebug: 1
-    ShowTriangleDetails: 1
-    ShowWaterLine: 1
-    ShowSubmergedVolume: 1
+    ShowTriangleDetails: 0
+    ShowWaterLine: 0
+    ShowSubmergedVolume: 0
     ShowWaterPatch: 1
     ShowNormalsOriginalMesh: 0
     ShowTotalForce: 0
@@ -1021,7 +1036,7 @@ Rigidbody:
   m_Mass: 100
   m_Drag: 0
   m_AngularDrag: 100000
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
@@ -1173,12 +1188,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SimSettings:
-    ApplyForce: 1
-    ApplyViscousForce: 0
+    ApplyHydrostaticForce: 1
+    ApplyViscousForce: 1
+    ApplyDragForce: 1
+    ApplySlamForce: 1
     UseDragForce: 1
     UseSlamForce: 1
     UseVerticalForceOnly: 1
-    slamForceMultiplier: 5000
+    ViscousDragCoefficient: 0.5
+    DragCoefficient: {x: 10, y: 1, z: 0.25}
+    SuctionCoefficient: {x: 1, y: 0.1, z: 0.25}
+    SlamForceMultiplier: 5000
     Rho: 1000
     WaterpatchDimRows: 7
     WaterpatchDimCols: 7
@@ -1194,7 +1214,7 @@ MonoBehaviour:
     ShowTotalForce: 0
     ShowVertexHeight: 0
     ShowTriangles: 0
-    RefineTriangles: 0
+    RefineTriangles: 1
     ShowTriangleCuts: 0
     PrintWarnings: 0
   WaterpatchScaleFactor: 1.5
@@ -1261,7 +1281,7 @@ Rigidbody:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1394594686}
   serializedVersion: 2
-  m_Mass: 500
+  m_Mass: 100
   m_Drag: 0
   m_AngularDrag: 0.05
   m_UseGravity: 1
@@ -1299,7 +1319,7 @@ ReflectionProbe:
   m_TimeSlicingMode: 0
   m_Resolution: 128
   m_UpdateFrequency: 0
-  m_BoxSize: {x: 50.89, y: 25.5, z: 52.85}
+  m_BoxSize: {x: 50.89, y: 25.5, z: 121.2}
   m_BoxOffset: {x: 0, y: 0, z: 0}
   m_NearClip: 0.3
   m_FarClip: 1000
@@ -1324,7 +1344,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1748488435}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.45, y: -1.9, z: 0.34}
+  m_LocalPosition: {x: 0.45, y: -1.9, z: -24}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1519,7 +1539,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2112857725}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.54, y: 0.476, z: 12.953}
+  m_LocalPosition: {x: 1.54, y: 2.99, z: 12.953}
   m_LocalScale: {x: 0.93445957, y: 0.93445957, z: 0.93445957}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1537,12 +1557,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SimSettings:
-    ApplyForce: 1
-    ApplyViscousForce: 0
+    ApplyHydrostaticForce: 1
+    ApplyViscousForce: 1
+    ApplyDragForce: 1
+    ApplySlamForce: 1
     UseDragForce: 1
     UseSlamForce: 1
     UseVerticalForceOnly: 1
-    slamForceMultiplier: 5000
+    ViscousDragCoefficient: 0.5
+    DragCoefficient: {x: 10, y: 1, z: 0.25}
+    SuctionCoefficient: {x: 1, y: 0.1, z: 0.25}
+    SlamForceMultiplier: 5000
     Rho: 1024
     WaterpatchDimRows: 5
     WaterpatchDimCols: 5

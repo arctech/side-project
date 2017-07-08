@@ -9,15 +9,15 @@ public class OceanManager : MonoBehaviour {
 	[System.Serializable]
 	public class GerstnerWave {
 		
-		[Range(0,2)]
+		[Range(0,3)]
 		public float Q = 0;
-		[Range(0.1f,100)]
+		[Range(0.1f,5)]
 		public float WaveLength = 1;
 		[Range(0.01f,2)]
 		public float Amplitude = 1;
 		public Vector2 Direction = Vector2.zero;
 		
-		[Range(0, 100)]
+		[Range(0, 3)]
 		public float Speed = 1;
 
 		public GerstnerWave(float q, float w, float a, Vector2 d, float s) {
@@ -55,10 +55,12 @@ public class OceanManager : MonoBehaviour {
 
 		Material[] materialsArray = this.GetComponent<MeshRenderer> ().materials;
 		 foreach (Material material in materialsArray) {
-			 if(material.name.Equals("OceanMaterial (Instance)")) {
+			// if(material.name.Equals("OceanMaterial (Instance)")) {
+			 if(material.name.Equals("M_WaterMat (Instance)")) {
 			//	Debug.Log(material.name);
 				_material = material;
-			//	Debug.Log(material);
+				//break;
+				//Debug.Log(material);
 			 }
 		 }
 	
@@ -152,9 +154,24 @@ public class OceanManager : MonoBehaviour {
 		float size = 0.05f;
 		float offset = (_span / 2)  * numTiles;
 		Gizmos.color = Color.white;
+
 		for(int i = 0; i < numTiles; i++) {
 			for(int j = 0; j < numTiles; j++) {
-				Gizmos.DrawWireCube(calcPoint(new Vector3(i * _span - offset, 0 , j * _span - offset)), new Vector3(size, size, size));
+		//		Gizmos.DrawWireCube(calcPoint(new Vector3(i * _span - offset, 0 , j * _span - offset)), new Vector3(size, size, size));
+			}
+		}
+		float heightOffset = .015f;
+		Gizmos.color = Color.black;	
+		for(int i = 0; i < numTiles - 1; i++) {
+			for(int j = 0; j < numTiles - 1; j++) {
+				Vector3 start = calcPoint(new Vector3(i * _span - offset, heightOffset, j * _span - offset));
+				Vector3 end = calcPoint(new Vector3((i + 1) * _span - offset, heightOffset, j * _span - offset ));
+				
+				Vector3 start2 = calcPoint(new Vector3(i * _span - offset, heightOffset, j * _span - offset));
+				Vector3 end2 = calcPoint(new Vector3(i * _span - offset, heightOffset, (j+1) * _span - offset));
+
+				Gizmos.DrawLine(start, end);
+				Gizmos.DrawLine(start2, end2);
 			}
 		}
 	}

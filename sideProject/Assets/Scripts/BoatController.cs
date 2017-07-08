@@ -114,17 +114,27 @@ public class BoatController : MonoBehaviour {
 
 	[System.Serializable]
 	public class SimulationSettings {
-		public bool ApplyForce = false;
+		public bool ApplyHydrostaticForce = false;
 
 		public bool ApplyViscousForce = false;
+
+		public bool ApplyDragForce = false;
+
+		public bool ApplySlamForce = false;
 
 		public bool UseDragForce = true;
 
 		public bool UseSlamForce = true;
 
 		public bool UseVerticalForceOnly = true;
+
+		public float ViscousDragCoefficient = 0.5f;
+
+		public Vector3 DragCoefficient = new Vector3(10.0f, 1.0f, .25f);
+
+		public Vector3  SuctionCoefficient = new Vector3(1.0f, .1f, .25f);
 	
-		public float slamForceMultiplier = 5000.0f;
+		public float SlamForceMultiplier = 5000.0f;
 
 		public float Rho = 1027.0f;
 
@@ -243,6 +253,10 @@ public class BoatController : MonoBehaviour {
 		_waterPatch.build();
 		
 		_forcePreFactor = -(SimSettings.Rho * Physics.gravity.y);
+
+		SimSettings.DragCoefficient *= 100.0f;
+				SimSettings.SuctionCoefficient *= 100.0f;
+
 	}
 	
 	// Update is called once per frame
@@ -295,44 +309,86 @@ public class BoatController : MonoBehaviour {
 			
 			if(tri.Area < 0.00001f || float.IsNaN(tri.Area) ) {
 			//	Debug.Log("Calculating Force: Area invalid: " + tri.Area);
-			//	continue;
-			}
-			
-			Vector3 force = _forcePreFactor * (tri.Center.Depth) * tri.Area * tri.Normal  * SimSettings.DensityCorrectionModifier; 
-			tri.Force = force.normalized;				
-
-			if( Mathf.Approximately(force.magnitude, 0.0f) && isForceValid(force, "buoyancy force")) {
-				debugLog("Hydrostatic force is invalid: " + force);
+				continue;
 			}
 		
+		
 			// calc hydrostatic force
-			if( SimSettings.ApplyForce) {
+			if( SimSettings.ApplyHydrostaticForce) {
+					
+				Vector3 force = _forcePreFactor * (tri.Center.Depth) * tri.Area * tri.Normal  * SimSettings.DensityCorrectionModifier; 
+				tri.Force = force.normalized;				
+
+				if( Mathf.Approximately(force.magnitude, 0.0f) && isForceValid(force, "buoyancy force")) {
+					debugLog("Hydrostatic force is invalid: " + force);
+				}
 				if(SimSettings.UseVerticalForceOnly) { 
 					force.x = 0.0f;
 					force.z = 0.0f;
 				}
 				if( !Mathf.Approximately(force.magnitude, 0.0f) && isForceValid(force, "buoyancy force")) {
-					_rigidBody.AddForceAtPosition(force, tri.ForceCenter);			
+					_rigidBody.AddForceAtPosition(force, tri.ForceCenter);	
+				//	Debug.Log("Hydrostatic force: " + force);
 				}
+				_totalForceVector += force;
 			}
 
+			
 			// calc velocity
-			Vector3 centerOfMassVel = _rigidBody.velocity;
-			Vector3 centerOfMassAngularVel = _rigidBody.angularVelocity;
-			Vector3 centerToCog = tri.Center.Position - _rigidBody.centerOfMass;
-			Vector3 velocityDir = (centerOfMassVel + Vector3.Cross(centerOfMassAngularVel, centerToCog)).normalized;
-			tri.Velocity = velocityDir;
+			//Vector3 centerOfMassVel = _rigidBody.velocity;
+			//Vector3 centerOfMassAngularVel = _rigidBody.angularVelocity;
+			//Vector3 centerToCog = tri.Center.Position - _rigidBody.centerOfMass;
+			//Vector3 velocityDir = (centerOfMassVel + Vector3.Cross(centerOfMassAngularVel, centerToCog)).normalized;
+			Vector3 triCenterVelocity = _rigidBody.GetPointVelocity(tri.Center.Position);
+			Vector3 tangentialVelocity = triCenterVelocity - (Vector3.Dot( triCenterVelocity , tri.Normal)) * tri.Normal;
+			tri.Velocity = tangentialVelocity;
 
-			Vector3 viscousForce = Vector3.zero;
+			//Vector3 v_i = 
+
+			Vector3 tempForce = Vector3.zero;
+			
 			if(SimSettings.ApplyViscousForce) 
 			{
-				if(checkForce(viscousForce)) 
-				{
-					
-				}
+				Vector3 viscousForce = -tangentialVelocity *  tri.Area * SimSettings.ViscousDragCoefficient * Mathf.Max(51.4444f - tangentialVelocity.magnitude, 0.0f);
+				//Debug.Log("viscousForce: " + velocityDir + " " + tri.Area + "  " +  SimSettings.ViscousDragCoefficient + " -> " + viscousForce);
+				tempForce += viscousForce;
 			}
-			
-			_totalForceVector += force;
+
+			if(SimSettings.ApplyDragForce) {
+				float refV = 500.0f;
+				Vector3 dragForce = Vector3.zero;
+				
+				float projectedVel = Vector3.Dot(triCenterVelocity.normalized, tri.Normal);
+				float speedFactor = triCenterVelocity.magnitude / refV;
+				//SimSettings.DragCoefficient
+				
+				
+				if(projectedVel >= 0) {
+					// push drag
+					dragForce = -tri.Area * Mathf.Pow(Mathf.Abs(projectedVel), SimSettings.DragCoefficient.y) * tri.Normal
+					  * (SimSettings.DragCoefficient.x * speedFactor + SimSettings.DragCoefficient.z * Mathf.Pow(speedFactor, 2.0f));
+				}
+
+				else {
+					// pull drag
+					dragForce = tri.Area * Mathf.Pow(Mathf.Abs(projectedVel), SimSettings.SuctionCoefficient.y) * tri.Normal
+						* (SimSettings.SuctionCoefficient.x * speedFactor + SimSettings.SuctionCoefficient.z * Mathf.Pow(speedFactor, 2.0f));
+				}
+				
+				tempForce += dragForce;
+			}
+
+			if(SimSettings.ApplySlamForce) {
+				Vector3 slamForce = Vector3.zero;
+
+				tempForce += slamForce;
+			}
+
+			if( !Mathf.Approximately(tempForce.magnitude, 0.0f) && isForceValid(tempForce, "Incr. force")) {
+				//	Debug.Log("tempForce: " + tempForce);
+					_rigidBody.AddForceAtPosition(tempForce, tri.Center.Position);			
+			}
+
 			_commonCenterOfApplication += tri.ForceCenter;
 		}
 
