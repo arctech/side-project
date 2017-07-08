@@ -147,7 +147,7 @@ public class BoatController : MonoBehaviour {
 		[Range(0.1f,2)]
 		public float DensityCorrectionModifier = .2f;
 
-		public DampingMethod Damping_Methods = DampingMethod.Linear;
+//		public DampingMethod Damping_Methods = DampingMethod.Linear;
 	}
 
 	[System.Serializable]
@@ -177,11 +177,11 @@ public class BoatController : MonoBehaviour {
 		public bool PrintWarnings = false;
 	}
 
-	[System.Serializable]
+/*	[System.Serializable]
 	public enum DampingMethod {
 		Linear,
 		Quadratic
-	}
+	}*/
 
 	public SimulationSettings SimSettings = new SimulationSettings();
 
@@ -225,6 +225,8 @@ public class BoatController : MonoBehaviour {
 
 	private float _initialArea = 0.0f;
 
+	private Transform _motorLocator;
+
 	// Use this for initialization
 	void Start () {
 		_rigidBody = this.GetComponent<Rigidbody>();
@@ -256,6 +258,9 @@ public class BoatController : MonoBehaviour {
 
 		SimSettings.DragCoefficient *= 100.0f;
 				SimSettings.SuctionCoefficient *= 100.0f;
+
+		_motorLocator = transform.Find("MotorLocator");
+		Debug.Log("motor: " + _motorLocator);
 
 	}
 	
@@ -343,8 +348,6 @@ public class BoatController : MonoBehaviour {
 			Vector3 tangentialVelocity = triCenterVelocity - (Vector3.Dot( triCenterVelocity , tri.Normal)) * tri.Normal;
 			tri.Velocity = tangentialVelocity;
 
-			//Vector3 v_i = 
-
 			Vector3 tempForce = Vector3.zero;
 			
 			if(SimSettings.ApplyViscousForce) 
@@ -390,6 +393,38 @@ public class BoatController : MonoBehaviour {
 			}
 
 			_commonCenterOfApplication += tri.ForceCenter;
+			
+		//	float rotSpeed = 3f;
+	//		_motorLocator.transform.Rotate(0, -Input.GetAxis("Horizontal") * rotSpeed * Time.deltaTime, 0);
+			Debug.Log(" loc: " + _motorLocator);
+			if(_motorLocator) {
+				float rotSpeed = 3f;
+				Debug.Log(Input.GetAxis("Horizontal"));
+				 _motorLocator.transform.Rotate(0, -Input.GetAxis("Horizontal") * rotSpeed * Time.deltaTime, 0);
+				//  _motorLocator.transform.Rotate(0, Input.GetAxis("Horizontal") * rotSpeed * Time.deltaTime, 0);
+
+				float accelerationInput = Input.GetAxis ("Accelerate");
+				Vector3 dir = _motorLocator.transform.forward.normalized;
+				
+				if(accelerationInput > 0) {
+				//	Debug.Log("acc:  " + accelerationInput);
+					_rigidBody.AddForceAtPosition(dir * 5.0f, _motorLocator.transform.position);
+				}
+				
+
+				if(Input.GetKeyDown(KeyCode.W)) {
+
+				}
+				if(Input.GetKeyDown(KeyCode.S)) {
+
+				}
+				if(Input.GetKeyDown(KeyCode.A)) {
+					 //_motorLocator.transform.Rotate(0, Input.GetAxis("Horizontal") * rotSpeed * Time.deltaTime, 0);
+				}
+				if(Input.GetKeyDown(KeyCode.D)) {
+					 //_motorLocator.transform.Rotate(0, Input.GetAxis("Horizontal") * rotSpeed * Time.deltaTime, 0);
+				}
+			}
 		}
 
 		_commonCenterOfApplication /= _submergedTriangleList.Count;
@@ -686,6 +721,12 @@ public class BoatController : MonoBehaviour {
 		}
 
 		Transform t = this.transform;
+
+		if(_motorLocator != null) {
+			Gizmos.color  = Color.yellow;
+			Gizmos.DrawLine(_motorLocator.transform.position, _motorLocator.transform.position + 3.0f * _motorLocator.transform.forward.normalized);
+		}
+	
 
 		if(DebugSet.ShowNormalsOriginalMesh) {
 			foreach(MeshTriangle mt in _meshTriangleList) 
