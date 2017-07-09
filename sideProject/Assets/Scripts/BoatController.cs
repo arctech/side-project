@@ -146,8 +146,15 @@ public class BoatController : MonoBehaviour {
 
 		[Range(0.1f,2)]
 		public float DensityCorrectionModifier = .2f;
+	}
 
-//		public DampingMethod Damping_Methods = DampingMethod.Linear;
+	[System.Serializable]
+	public class BoatSettings {
+
+		public float MaxAcceleration = 5.0f;
+		public float MotorForceMultiplier = 1.0f;
+
+		public float RotationSpeed = 5.0f;
 	}
 
 	[System.Serializable]
@@ -177,15 +184,11 @@ public class BoatController : MonoBehaviour {
 		public bool PrintWarnings = false;
 	}
 
-/*	[System.Serializable]
-	public enum DampingMethod {
-		Linear,
-		Quadratic
-	}*/
-
 	public SimulationSettings SimSettings = new SimulationSettings();
 
 	public DebugSettings DebugSet = new DebugSettings();
+
+	public BoatSettings BoatSet = new BoatSettings();
 
 	public float WaterpatchScaleFactor = 1.5f;
 	private List<MeshTriangle> _meshTriangleList = new List<MeshTriangle>();
@@ -227,6 +230,15 @@ public class BoatController : MonoBehaviour {
 
 	private Transform _motorLocator;
 
+	private Vector3 _motorLocatorEndPoint = new Vector3();
+
+	private float _boatAcceleration = 0.0f;
+
+	private float _boatVelocity  = 0.0f;
+	private float _motorLocatorEndPointAngle = 0.0f;
+
+	private Vector3 _motorForceVector = new Vector3();
+
 	// Use this for initialization
 	void Start () {
 		_rigidBody = this.GetComponent<Rigidbody>();
@@ -260,8 +272,12 @@ public class BoatController : MonoBehaviour {
 				SimSettings.SuctionCoefficient *= 100.0f;
 
 		_motorLocator = transform.Find("MotorLocator");
-		Debug.Log("motor: " + _motorLocator);
-
+		if(_motorLocator != null) {
+			_motorLocatorEndPointAngle = Mathf.Deg2Rad * 270.0f;
+			float radius = 3.0f;
+			_motorLocatorEndPoint = new Vector3((radius)  *  Mathf.Cos(_motorLocatorEndPointAngle) + _motorLocator.position.x, 
+				_motorLocator.transform.position.y, (radius) * Mathf.Sin(_motorLocatorEndPointAngle) + _motorLocator.transform.position.z );
+		}
 	}
 	
 	// Update is called once per frame
@@ -371,7 +387,6 @@ public class BoatController : MonoBehaviour {
 					dragForce = -tri.Area * Mathf.Pow(Mathf.Abs(projectedVel), SimSettings.DragCoefficient.y) * tri.Normal
 					  * (SimSettings.DragCoefficient.x * speedFactor + SimSettings.DragCoefficient.z * Mathf.Pow(speedFactor, 2.0f));
 				}
-
 				else {
 					// pull drag
 					dragForce = tri.Area * Mathf.Pow(Mathf.Abs(projectedVel), SimSettings.SuctionCoefficient.y) * tri.Normal
@@ -393,22 +408,25 @@ public class BoatController : MonoBehaviour {
 			}
 
 			_commonCenterOfApplication += tri.ForceCenter;
-			
-		//	float rotSpeed = 3f;
-	//		_motorLocator.transform.Rotate(0, -Input.GetAxis("Horizontal") * rotSpeed * Time.deltaTime, 0);
-			Debug.Log(" loc: " + _motorLocator);
-			if(_motorLocator) {
-				float rotSpeed = 3f;
-				Debug.Log(Input.GetAxis("Horizontal"));
-				 _motorLocator.transform.Rotate(0, -Input.GetAxis("Horizontal") * rotSpeed * Time.deltaTime, 0);
-				//  _motorLocator.transform.Rotate(0, Input.GetAxis("Horizontal") * rotSpeed * Time.deltaTime, 0);
+		}
 
+		_commonCenterOfApplication /= _submergedTriangleList.Count;
+
+		//	float rotSpeed = 3f;
+		//_motorLocator.transform.Rotate(0, -Input.GetAxis("Horizontal") * rotSpeed * Time.deltaTime, 0);
+		//	Debug.Log(transform.name + " loc: " + _motorLocator);
+		if(transform.name.Equals("cube1")   && _motorLocator != null) {
+				//_motorLocatorEndPoint
+				float radius = 3.0f;
+				_motorLocatorEndPointAngle += Input.GetAxis("Horizontal") * BoatSet.RotationSpeed * Time.deltaTime *  Mathf.Deg2Rad;
+				_motorLocatorEndPoint = new Vector3((radius)  *  Mathf.Cos(_motorLocatorEndPointAngle) + _motorLocator.position.x, 
+					_motorLocator.transform.position.y, (radius) * Mathf.Sin(_motorLocatorEndPointAngle) + _motorLocator.transform.position.z );
+				Vector3 forceDir = (_motorLocator.transform.position - _motorLocatorEndPoint).normalized;
+	
 				float accelerationInput = Input.GetAxis ("Accelerate");
-				Vector3 dir = _motorLocator.transform.forward.normalized;
-				
 				if(accelerationInput > 0) {
 				//	Debug.Log("acc:  " + accelerationInput);
-					_rigidBody.AddForceAtPosition(dir * 5.0f, _motorLocator.transform.position);
+					_rigidBody.AddForceAtPosition(-forceDir * BoatSet.MotorForceMultiplier, _motorLocator.transform.position);
 				}
 				
 
@@ -419,15 +437,10 @@ public class BoatController : MonoBehaviour {
 
 				}
 				if(Input.GetKeyDown(KeyCode.A)) {
-					 //_motorLocator.transform.Rotate(0, Input.GetAxis("Horizontal") * rotSpeed * Time.deltaTime, 0);
 				}
 				if(Input.GetKeyDown(KeyCode.D)) {
-					 //_motorLocator.transform.Rotate(0, Input.GetAxis("Horizontal") * rotSpeed * Time.deltaTime, 0);
 				}
 			}
-		}
-
-		_commonCenterOfApplication /= _submergedTriangleList.Count;
 
 		_debugMsgFixedUpdate = "FixedUpdate: " + (Time.realtimeSinceStartup - start);
 				
@@ -724,7 +737,10 @@ public class BoatController : MonoBehaviour {
 
 		if(_motorLocator != null) {
 			Gizmos.color  = Color.yellow;
-			Gizmos.DrawLine(_motorLocator.transform.position, _motorLocator.transform.position + 3.0f * _motorLocator.transform.forward.normalized);
+			Gizmos.DrawLine(_motorLocator.transform.position,  _motorLocatorEndPoint);
+			
+			Gizmos.color  = DrawingUtil.Cyan;
+			Gizmos.DrawLine(_motorLocator.transform.position, _motorForceVector);
 		}
 	
 

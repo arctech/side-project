@@ -233,6 +233,10 @@ MonoBehaviour:
     RefineTriangles: 1
     ShowTriangleCuts: 0
     PrintWarnings: 0
+  BoatSet:
+    MaxAcceleration: 5
+    MotorForceMultiplier: 1
+    RotationSpeed: 5
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 688232565}
 --- !u!54 &271374028
@@ -685,6 +689,10 @@ MonoBehaviour:
     RefineTriangles: 1
     ShowTriangleCuts: 0
     PrintWarnings: 0
+  BoatSet:
+    MaxAcceleration: 5
+    MotorForceMultiplier: 1
+    RotationSpeed: 5
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 688232565}
 --- !u!43 &831440726
@@ -922,7 +930,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1167999491}
   m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
-  m_LocalPosition: {x: -0.006655693, y: -0.1591, z: 1.6721}
+  m_LocalPosition: {x: -0.006655693, y: 0.208, z: 1.6721}
   m_LocalScale: {x: 0.18795723, y: 0.18795723, z: 0.18795723}
   m_Children: []
   m_Father: {fileID: 1394594687}
@@ -1039,6 +1047,10 @@ MonoBehaviour:
     RefineTriangles: 1
     ShowTriangleCuts: 0
     PrintWarnings: 0
+  BoatSet:
+    MaxAcceleration: 5
+    MotorForceMultiplier: 1
+    RotationSpeed: 5
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 688232565}
 --- !u!23 &1320907932
@@ -1249,7 +1261,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1394594686}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -12.269344, y: 1.04, z: 4.814552}
+  m_LocalPosition: {x: -12.269344, y: 1.89, z: 4.814552}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1167999492}
@@ -1268,12 +1280,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SimSettings:
-    ApplyHydrostaticForce: 0
-    ApplyViscousForce: 0
-    ApplyDragForce: 0
-    ApplySlamForce: 0
-    UseDragForce: 0
-    UseSlamForce: 0
+    ApplyHydrostaticForce: 1
+    ApplyViscousForce: 1
+    ApplyDragForce: 1
+    ApplySlamForce: 1
+    UseDragForce: 1
+    UseSlamForce: 1
     UseVerticalForceOnly: 1
     ViscousDragCoefficient: 0.5
     DragCoefficient: {x: 10, y: 1, z: 0.25}
@@ -1296,6 +1308,10 @@ MonoBehaviour:
     RefineTriangles: 1
     ShowTriangleCuts: 0
     PrintWarnings: 0
+  BoatSet:
+    MaxAcceleration: 5
+    MotorForceMultiplier: 18.71
+    RotationSpeed: 20
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 688232565}
 --- !u!23 &1394594689
@@ -1363,7 +1379,7 @@ Rigidbody:
   m_Mass: 100
   m_Drag: 0
   m_AngularDrag: 0.05
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
@@ -1664,6 +1680,10 @@ MonoBehaviour:
     RefineTriangles: 1
     ShowTriangleCuts: 0
     PrintWarnings: 0
+  BoatSet:
+    MaxAcceleration: 5
+    MotorForceMultiplier: 1
+    RotationSpeed: 5
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 688232565}
 --- !u!54 &2112857731
