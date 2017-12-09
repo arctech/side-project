@@ -528,9 +528,9 @@ MonoBehaviour:
   wave1:
     Q: 1
     WaveLength: 0.31
-    Amplitude: 0.51
+    Amplitude: 0.03
     Direction: {x: 1, y: 1}
-    Speed: 0.3
+    Speed: 0.18
   wave2:
     Q: 0.66
     WaveLength: 1
@@ -1288,13 +1288,13 @@ MonoBehaviour:
     UseSlamForce: 1
     UseVerticalForceOnly: 1
     ViscousDragCoefficient: 0.5
-    DragCoefficient: {x: 10, y: 1, z: 0.25}
-    SuctionCoefficient: {x: 1, y: 0.1, z: 0.25}
+    DragCoefficient: {x: 10, y: 100, z: 0.25}
+    SuctionCoefficient: {x: 1, y: 10, z: 0.25}
     SlamForceMultiplier: 5000
     Rho: 1000
     WaterpatchDimRows: 7
     WaterpatchDimCols: 7
-    DensityCorrectionModifier: 1
+    DensityCorrectionModifier: 0.52
   DebugSet:
     ShowDebug: 1
     ShowTriangleDetails: 1
@@ -1311,7 +1311,7 @@ MonoBehaviour:
   BoatSet:
     MaxAcceleration: 5
     MotorForceMultiplier: 18.71
-    RotationSpeed: 20
+    RotationSpeed: 50
   WaterpatchScaleFactor: 1.5
   _oceanManager: {fileID: 688232565}
 --- !u!23 &1394594689
@@ -1660,8 +1660,8 @@ MonoBehaviour:
     UseSlamForce: 1
     UseVerticalForceOnly: 1
     ViscousDragCoefficient: 0.5
-    DragCoefficient: {x: 10, y: 1, z: 0.25}
-    SuctionCoefficient: {x: 1, y: 0.1, z: 0.25}
+    DragCoefficient: {x: 10, y: 10, z: 0.25}
+    SuctionCoefficient: {x: 1, y: 1, z: 0.25}
     SlamForceMultiplier: 5000
     Rho: 1024
     WaterpatchDimRows: 5

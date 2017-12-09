@@ -151,10 +151,15 @@ public class BoatController : MonoBehaviour {
 	[System.Serializable]
 	public class BoatSettings {
 
-		public float MaxAcceleration = 5.0f;
 		public float MotorForceMultiplier = 1.0f;
 
+		public float TopSpeed = 10.0f;
+
 		public float RotationSpeed = 5.0f;
+
+		public float Acceleration = 0.05f;
+
+		public float Velocity = 0.0f;
 	}
 
 	[System.Serializable]
@@ -267,9 +272,6 @@ public class BoatController : MonoBehaviour {
 		_waterPatch.build();
 		
 		_forcePreFactor = -(SimSettings.Rho * Physics.gravity.y);
-
-		SimSettings.DragCoefficient *= 100.0f;
-				SimSettings.SuctionCoefficient *= 100.0f;
 
 		_motorLocator = transform.Find("MotorLocator");
 		if(_motorLocator != null) {
@@ -426,7 +428,12 @@ public class BoatController : MonoBehaviour {
 				float accelerationInput = Input.GetAxis ("Accelerate");
 				if(accelerationInput > 0) {
 				//	Debug.Log("acc:  " + accelerationInput);
-					_rigidBody.AddForceAtPosition(-forceDir * BoatSet.MotorForceMultiplier, _motorLocator.transform.position);
+					_rigidBody.AddForceAtPosition(-forceDir * BoatSet.Velocity, _motorLocator.transform.position);
+					BoatSet.Velocity = Mathf.Min(BoatSet.Velocity + BoatSet.Acceleration, BoatSet.TopSpeed);
+				}
+				else 
+				{
+					BoatSet.Velocity = 0.0f;
 				}
 				
 
