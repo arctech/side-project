@@ -13,4 +13,8 @@ public class MathUtil  {
         float c = Vector3.Distance(A, C);
         return (a * c * Mathf.Sin(Vector3.Angle(B - A, C - A) * Mathf.Deg2Rad)) / 2f;
 	}
+
+	public static Vector3 GetMidPointBetweenPoints(Vector3 start, Vector3 end) {
+		return start + ((end - start) * 0.5f);
+	}
 }

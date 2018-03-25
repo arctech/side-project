@@ -746,7 +746,7 @@ public class BoatController : MonoBehaviour {
 			Gizmos.color  = Color.yellow;
 			Gizmos.DrawLine(_motorLocator.transform.position,  _motorLocatorEndPoint);
 			
-			Gizmos.color  = DrawingUtil.Cyan;
+			Gizmos.color  = ColorUtil.Cyan;
 			Gizmos.DrawLine(_motorLocator.transform.position, _motorForceVector);
 		}
 	
@@ -781,7 +781,7 @@ public class BoatController : MonoBehaviour {
 				Gizmos.color = Color.red;
 				Gizmos.DrawSphere(tri.Center.Position, 0.005f);
 
-				Gizmos.color = DrawingUtil.Orange;
+				Gizmos.color = ColorUtil.Orange;
 				Gizmos.DrawLine(tri.Center.Position, tri.Center.Position + 0.2f * tri.Velocity);
 
 				Gizmos.color = Color.red;
@@ -820,12 +820,12 @@ public class BoatController : MonoBehaviour {
 		}
 		
 		if(DebugSet.ShowTotalForce) {
-			Gizmos.color = DrawingUtil.Cyan;
+			Gizmos.color = ColorUtil.Cyan;
 			Gizmos.DrawSphere(_commonCenterOfApplication, 0.25f);
 			Gizmos.DrawLine(_commonCenterOfApplication, _commonCenterOfApplication + 1.0f * _totalForceVector);
 		
 		
-			Gizmos.color = DrawingUtil.Orange;
+			Gizmos.color = ColorUtil.Orange;
 			Gizmos.DrawSphere(transform.position + transform.rotation * _rigidBody.centerOfMass, 0.25f);
 		}
 
@@ -833,7 +833,7 @@ public class BoatController : MonoBehaviour {
 			foreach(LinePair pair in _waterLinePoints) {
 				Gizmos.DrawLine(pair.p1, pair.p2);
 			}
-			Gizmos.color = DrawingUtil.Orange;
+			Gizmos.color = ColorUtil.Orange;
 			foreach(Vector3 p in _sortedWaterLinePoints) {
 				Gizmos.DrawWireSphere(p, 0.025f);
 			}
