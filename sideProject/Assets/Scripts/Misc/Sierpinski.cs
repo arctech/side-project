@@ -10,7 +10,7 @@ public class Sierpinski : MonoBehaviour {
 	Vector3 _B = new Vector3(0, 0, 0);
 	Vector3 _C = new Vector3(5, 8.66f, 0);
 
-	private int SUBD_LIMIT = 15400;
+	private int SUBD_LIMIT = 1200;
 
 	struct PointPair {
 		public Vector3 V1;

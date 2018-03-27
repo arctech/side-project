@@ -244,6 +244,11 @@ public class BoatController : MonoBehaviour {
 
 	private Vector3 _motorForceVector = new Vector3();
 
+
+	private BVertex _H = new BVertex(new Vector3());
+	private	BVertex _M = new BVertex(new Vector3());
+	private	BVertex _L = new BVertex(new Vector3());
+
 	// Use this for initialization
 	void Start () {
 		_rigidBody = this.GetComponent<Rigidbody>();
@@ -510,71 +515,76 @@ public class BoatController : MonoBehaviour {
 	}
 
 	private void calcWaterLine(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 origNormal) {
-		BVertex H = new BVertex(v1);
-		BVertex M = new BVertex(v2);
-		BVertex L = new BVertex(v3);
-		sortVertices(ref H, ref M, ref L);
+	//	BVertex H = new BVertex(v1);
+	//	BVertex M = new BVertex(v2);
+	//	BVertex L = new BVertex(v3);
 
-		if(L.Depth < M.Depth) {
+		_H.Position = v1;
+		_M.Position = v2;
+		_L.Position = v3;
+
+		sortVertices(ref _H, ref _M, ref _L);
+
+		if(_L.Depth < _M.Depth) {
  			debugLog("calcWaterLine: hL > hM!");
 		}
-		if(M.Depth < H.Depth) {
+		if(_M.Depth < _H.Depth) {
 			debugLog("calcWaterLine: hM > hH!");
 		}
 	
 		// no vertices under water
-		if(L.Depth > 0) return;
+		if(_L.Depth > 0) return;
 
 		// case 1:
 		//if( L.Depth <= 0 && M.Depth <= 0 && H.Depth >= 0) 
-		if( M.Depth < 0 && H.Depth > 0) 
+		if( _M.Depth < 0 && _H.Depth > 0) 
 		{
-			float tm = -M.Depth / (H.Depth - M.Depth);
-			float tl = -L.Depth / (H.Depth - L.Depth);
+			float tm = -_M.Depth / (_H.Depth - _M.Depth);
+			float tl = -_L.Depth / (_H.Depth - _L.Depth);
 
-			Vector3 MH = H.Position - M.Position;
-			Vector3 LH = H.Position - L.Position;
+			Vector3 MH = _H.Position - _M.Position;
+			Vector3 LH = _H.Position - _L.Position;
 
-			Vector3 IM = M.Position + tm * MH;
-			Vector3 IL = L.Position + tl * LH;
+			Vector3 IM = _M.Position + tm * MH;
+			Vector3 IL = _L.Position + tl * LH;
 
-			Vector3 normal1 = calculateNormal(IM, M.Position, L.Position);
+			Vector3 normal1 = calculateNormal(IM, _M.Position, _L.Position);
 			if(! (origNormal == normal1))
 			{
 				normal1 *= -1;
 			}
 
-			cutTriangle(IM, M.Position, L.Position, normal1);
+			cutTriangle(IM, _M.Position, _L.Position, normal1);
 			
-			Vector3 normal2 = calculateNormal(IL, IM, L.Position);
+			Vector3 normal2 = calculateNormal(IL, IM, _L.Position);
 			if(! (origNormal == normal2))
 			{
 				normal2 *= -1;
 			}
 			
-			cutTriangle(IL, IM, L.Position, normal2);
+			cutTriangle(IL, IM, _L.Position, normal2);
 
 			_waterLinePoints.Add(new LinePair(IM, IL));
 		}
 		// case 2:
 		//if( L.Depth < 0 &&  M.Depth > 0 && H.Depth >= 0) {
-		if( L.Depth < 0 &&  M.Depth > 0) {
-			float tm = -L.Depth / (M.Depth - L.Depth);
-			float tl = -L.Depth / (H.Depth - L.Depth);
+		if( _L.Depth < 0 &&  _M.Depth > 0) {
+			float tm = -_L.Depth / (_M.Depth - _L.Depth);
+			float tl = -_L.Depth / (_H.Depth - _L.Depth);
 
-			Vector3 LM = M.Position - L.Position;
-			Vector3 LH = H.Position - L.Position;
+			Vector3 LM = _M.Position - _L.Position;
+			Vector3 LH = _H.Position - _L.Position;
 
-			Vector3 IM = L.Position + tm * LM;
-			Vector3 IH = L.Position + tl * LH;
+			Vector3 IM = _L.Position + tm * LM;
+			Vector3 IH = _L.Position + tl * LH;
 
-			Vector3 normal3 = calculateNormal(IM, IH, L.Position);
+			Vector3 normal3 = calculateNormal(IM, IH, _L.Position);
 			if(! (origNormal == normal3))
 			{
 				normal3 *= -1;
 			}
 
-			cutTriangle(IH, IM, L.Position, normal3);
+			cutTriangle(IH, IM, _L.Position, normal3);
 		
 			_waterLinePoints.Add(new LinePair(IM, IH));
 		}
