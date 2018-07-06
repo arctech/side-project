@@ -17,4 +17,19 @@ public class MathUtil  {
 	public static Vector3 GetMidPointBetweenPoints(Vector3 start, Vector3 end) {
 		return start + ((end - start) * 0.5f);
 	}
+
+
+	/*public static void GetCameraRaycastHit(Camera camera, Vector3 position, RaycastHit hitResult) {
+		//RaycastHit hitResult;
+		Ray ray = camera.ScreenPointToRay(position);
+
+		if( Physics.Raycast( ray, out hitResult))
+		{
+			Transform objectHit = hitResult.transform;
+			//Debug.DrawLine(hitResult.point, (hitResult.point + hitResult.normal * 0.2f)); 
+		}
+		
+	}*/
+
+
 }
