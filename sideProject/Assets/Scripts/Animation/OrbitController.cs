@@ -11,9 +11,12 @@ public class OrbitController : MonoBehaviour {
 	
 	public Renderer renderer;
 
+	private SphereCollider _sphereCollider;
+
 	// Use this for initialization
 	void Start () {
 		renderer = GetComponent<Renderer>();
+		_sphereCollider = GetComponent<SphereCollider>();
 	}
 	
 	// Update is called once per frame
@@ -23,6 +26,8 @@ public class OrbitController : MonoBehaviour {
 		this.transform.RotateAround( target.transform.position, Vector3.up, _angle);
 
 		//Input.mousePosition
+
+		
 
 		if( _isDragging)
 		{
@@ -34,6 +39,21 @@ public class OrbitController : MonoBehaviour {
 			{
 				Transform objectHit = hitResult.transform;
 				Debug.DrawLine(hitResult.point, (hitResult.point + hitResult.normal * 0.2f)); 
+
+				float span = 0.2f;
+				Vector3 cross = Vector3.Cross(Camera.main.transform.right, hitResult.normal);
+				Debug.DrawLine(hitResult.point, hitResult.point + span * cross, Color.green);
+				//Vector3 cross2 = Vector3.Cross();
+				Debug.DrawLine( hitResult.point, hitResult.point + span * Camera.main.transform.right, Color.red);
+
+				Vector3 leftUpper = new Vector3(50, 0, 0);
+				Vector3 rightLower  = new Vector3(50, -50, 0);
+				
+Vector3 cross = Camera.main.transform.right	
+				//Camera.main.transform.right
+
+
+				DrawingUtil.DrawBoundingBox(_sphereCollider.bounds, ColorUtil.Cyan);
 			}	
 		}
 
@@ -42,8 +62,7 @@ public class OrbitController : MonoBehaviour {
 
 
 	/*
-
-		Called every frame while mouse is down.
+		Called every frame while mouse is down and hits Collider object of this gameObject.
  	*/
 	/*void OnMouseDrag() {
 		Debug.Log("Moues drag!");

@@ -90,6 +90,20 @@ public class DrawingUtil  {
         #endif
     }
 
+    public static void DrawBoundingBox(Bounds bounds, Color col) 
+    {
+        Vector3 upperLeft = bounds.center + bounds.extents;
+        //bounds.extents
+        Debug.DrawLine( bounds.center, upperLeft, col);
+        //Debug.DrawLine(leftUpper, new Vector3( rightLower.x - leftUpper.x , rightLower.y, rightLower.));
+        /*Debug.DrawLine(bounds.max, bounds.min, col);
+        Debug.DrawLine(bounds.max, bounds.min, col);
+        Debug.DrawLine(bounds.max, bounds.min, col);
+        Debug.DrawLine(bounds.max, bounds.min, col);
+        Debug.DrawLine(bounds.max, bounds.min, col);
+        Debug.DrawLine(bounds.max, bounds.min, col);*/
+    }
+
 	public static void DrawGizmoBox(Bounds bounds, Color color) {
 		//Vector3 vCenter = bounds.center;
 		//Vector3 vExtents = bounds.extents;
