@@ -35,6 +35,6 @@ public class BuoyantSimulationSettings {
 		[Range(3,9)]
 		public int WaterpatchDimCols = 5;
 
-		[Range(0.1f,2)]
+		[Range(0.01f,2)]
 		public float DensityCorrectionModifier = .2f;
 }

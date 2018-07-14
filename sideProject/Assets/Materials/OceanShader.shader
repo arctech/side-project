@@ -11,9 +11,9 @@ Shader "OceanShader"
 		_SkyColor ("SkyColor", Color) = (1,1,1,1)
 		//_SunDirection("SunDirection". Float) = 
 		_WireThickness ("Wire Thickness", RANGE(0, 800)) = 100
-		[MaterialToggle] UseDiscard("Discard Fill", Float) = 1
-		[MaterialToggle] ShowWireframe("Show Wireframe", Float) = 1
-		[MaterialToggle] ShowNormals("Show Normals", Float) = 1
+	//	[MaterialToggle] UseDiscard("Discard Fill", Float) = 1
+	//	[MaterialToggle] ShowWireframe("Show Wireframe", Float) = 1
+	//	[MaterialToggle] ShowNormals("Show Normals", Float) = 1
 		_BaseColor ("BaseColor", Color) = (1,1,1,1)
 		//[MaterialToggle] ("Show Normals", Float) = 1
 		//	_k ("K", RANGE(1,10)) = 1
@@ -255,8 +255,6 @@ Shader "OceanShader"
 					return float4(i.normal.xyz * 0.5 + 0.5, 1);
 					//return float4(i.normal.xyz, 1);
 				#endif
-				
-				
 				
 				
 				#ifdef SHOWWIREFRAME_ON 

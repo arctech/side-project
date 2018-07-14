@@ -1,16 +1,21 @@
 ﻿// Upgrade NOTE: upgraded instancing buffer 'Props' to new syntax.
 
-Shader "Custom/WaterShader" {
+Shader "Custom/WaterShader" 
+{
 	Properties {
+		[Space]
 		_AppTime ("AppTime", Float) = 1
+
+
+		[Space]
 		_SkyColor ("SkyColor", Color) = (1,1,1,1)
 
-		
 
 		_OceanColor ("OceanColor", Color) = (1,1,1,1)
-		_MainTex ("Albedo (RGB)", 2D) = "white" {}
+	//	_MainTex ("Albedo (RGB)", 2D) = "white" {}
 
 
+		[MaterialToggle] ShowWireframe("Show Wireframe", Float) = 1
 		[MaterialToggle] ShowNormals("Show Normals", Float) = 1
 
 		_Glossiness ("Smoothness", Range(0,1)) = 0.5
@@ -36,24 +41,27 @@ Shader "Custom/WaterShader" {
 		_Direction_4 ("Direction_4", Color) = (1,0,0,0) 
 		_q_4 ("Q_4", RANGE(0,1)) = 1
 	}
-	SubShader {
+	SubShader 
+	{
 		//Tags { "RenderType"="Opaque" }
 		//Tags { "Queue"="Transparent" "RenderType"="Transparent" "IgnoreProjector"="True" }
 		Tags { "Queue"="Transparent" }
 
-		LOD 200
+		//LOD 200
 		
 		CGPROGRAM
-
 		// Physically based Standard lighting model, and enable shadows on all light types
 		#pragma surface surf Standard vertex:vert fullforwardshadows 
+	
+	
 
 		// Use shader model 3.0 target, to get nicer looking lighting
-		#pragma target 3.0
+		#pragma target 4.0
 
 		sampler2D _MainTex;
 
 		#pragma multi_compile _ SHOWNORMALS_ON
+		#pragma multi_compile _ SHOWWIREFRAME_ON
 		#include "UnityCG.cginc"
 
 		float4 _SkyColor;
@@ -177,6 +185,10 @@ Shader "Custom/WaterShader" {
 			float3 color = _OceanColor;
 			#ifdef SHOWNORMALS_ON
 				color = IN.normal.xyz * 0.5 + 0.5;
+			#endif
+
+			#ifdef SHOWWIREFRAME_ON
+				color = float3( 1.0f, 0.0f, 0.0f );
 			#endif
 
 			//o.Albedo = c.rgb;
