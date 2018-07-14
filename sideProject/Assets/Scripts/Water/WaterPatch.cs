@@ -43,7 +43,7 @@ public class WaterPatch
 		}
 	}
 
-	public void updateCenter(Vector3 patchCenter, OceanManager om) {
+	public void sampleOcean(Vector3 patchCenter, OceanManager om) {
 		_center.x = patchCenter.x;
 		_center.z = patchCenter.z;
 		build();
@@ -51,7 +51,7 @@ public class WaterPatch
 //		Debug.Log("Om: " + om);
 		for(int i = 0; i < _pointList.Count; i++)
 		{
-			_pointList[i] = new Vector3(_pointList[i].x,om.calcPoint(_pointList[i]).y,_pointList[i].z );
+			_pointList[i] = new Vector3(_pointList[i].x, om.calcPoint(_pointList[i]).y, _pointList[i].z );
 		}
 	}
 

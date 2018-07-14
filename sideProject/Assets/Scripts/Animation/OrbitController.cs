@@ -49,7 +49,7 @@ public class OrbitController : MonoBehaviour {
 				Vector3 leftUpper = new Vector3(50, 0, 0);
 				Vector3 rightLower  = new Vector3(50, -50, 0);
 				
-Vector3 cross = Camera.main.transform.right	
+				//Vector3 cross = Camera.main.transform.right	
 				//Camera.main.transform.right
 
 

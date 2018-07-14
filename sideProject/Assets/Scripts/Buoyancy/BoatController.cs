@@ -8,82 +8,6 @@ using UnityEngine;
  */
 public class BoatController : MonoBehaviour {
 
-	class BVertex {
-		public Vector3 Position = Vector3.zero;
-		public float Depth = 0.0f;
-		
-		public BVertex(Vector3 pos) {
-			Position = pos;
-		}
-
-		public BVertex(Vector3 pos, float depth) {
-			Position = pos;
-			Depth = depth;
-		}
-	}
-
-	class SubmergedTriangle {
-		private BVertex _A;
-		private BVertex _B;
-		private BVertex _C;
-		private BVertex _center;
-		public Vector3 ForceCenter;
-		public Vector3 Force;
-		private Vector3 _normal;
-		public Vector3 Velocity;
-
-		private float _area;
-
-		public SubmergedTriangle(BVertex A, BVertex B, BVertex C, Vector3 normal) {
-			this._A = A;
-			this._B = B;
-			this._C = C;
-
-			_center = new BVertex(1.0f / 3.0f *  (_A.Position + _B.Position + _C.Position));
-			
-			_normal = normal;
-		
-			_area = MathUtil.calcTriangleArea(_A.Position, _B.Position, _C.Position);
-		}
-
-		public Vector3 Normal  {
-			get {
-				return _normal;
-			}
-		}
-
-		public BVertex Center {
-			get {
-				return _center;
-			}
-		}
-
-		public float Area {
-			get {
-				return _area;
-			}
-		}
-
-		public BVertex A
-		{
-			get {
-				return _A;
-			}
-		}
-		public BVertex B
-		{
-			get {
-				return _B;
-			}
-		}
-		public BVertex C
-		{
-			get {
-				return _C;
-			}
-		}
-	}
-
 	class LinePair {
 		public Vector3 p1;
 		public Vector3 p2;
@@ -112,88 +36,15 @@ public class BoatController : MonoBehaviour {
 		}
 	}
 
-	[System.Serializable]
-	public class SimulationSettings {
-		public bool ApplyHydrostaticForce = false;
+	[SerializeField]
+	public BuoyantSimulationSettings SimSettings = new BuoyantSimulationSettings();
 
-		public bool ApplyViscousForce = false;
+	[SerializeField]
+	public BuoyantBodySettings BoatSet = new BuoyantBodySettings();
 
-		public bool ApplyDragForce = false;
+	[SerializeField]
+	public BuoyantDebugSettings DebugSet = new BuoyantDebugSettings();
 
-		public bool ApplySlamForce = false;
-
-		public bool UseDragForce = true;
-
-		public bool UseSlamForce = true;
-
-		public bool UseVerticalForceOnly = true;
-
-		public float ViscousDragCoefficient = 0.5f;
-
-		public Vector3 DragCoefficient = new Vector3(10.0f, 1.0f, .25f);
-
-		public Vector3  SuctionCoefficient = new Vector3(1.0f, .1f, .25f);
-	
-		public float SlamForceMultiplier = 5000.0f;
-
-		public float Rho = 1027.0f;
-
-		[Range(3,9)]
-		public int WaterpatchDimRows = 5;
-
-		[Range(3,9)]
-		public int WaterpatchDimCols = 5;
-
-		[Range(0.1f,2)]
-		public float DensityCorrectionModifier = .2f;
-	}
-
-	[System.Serializable]
-	public class BoatSettings {
-
-		public float MotorForceMultiplier = 1.0f;
-
-		public float TopSpeed = 10.0f;
-
-		public float RotationSpeed = 5.0f;
-
-		public float Acceleration = 0.05f;
-
-		public float Velocity = 0.0f;
-	}
-
-	[System.Serializable]
-	public class DebugSettings {
-		public bool ShowDebug = true;
-
-		public bool ShowTriangleDetails = true;
-
-		public bool ShowWaterLine = true;
-
-		public bool ShowSubmergedVolume = true;
-
-		public bool ShowWaterPatch = true;
-
-		public bool ShowNormalsOriginalMesh = false;
-
-		public bool ShowTotalForce = false;
-
-		public bool ShowVertexHeight = false;
-
-		public bool ShowTriangles = false;
-
-		public bool RefineTriangles = true;
-
-		public bool ShowTriangleCuts = true;
-
-		public bool PrintWarnings = false;
-	}
-
-	public SimulationSettings SimSettings = new SimulationSettings();
-
-	public DebugSettings DebugSet = new DebugSettings();
-
-	public BoatSettings BoatSet = new BoatSettings();
 
 	public float WaterpatchScaleFactor = 1.5f;
 	private List<MeshTriangle> _meshTriangleList = new List<MeshTriangle>();
@@ -243,7 +94,6 @@ public class BoatController : MonoBehaviour {
 	private float _motorLocatorEndPointAngle = 0.0f;
 
 	private Vector3 _motorForceVector = new Vector3();
-
 
 	private BVertex _H = new BVertex(new Vector3());
 	private	BVertex _M = new BVertex(new Vector3());
@@ -314,7 +164,7 @@ public class BoatController : MonoBehaviour {
 	public void FixedUpdate() {
 		float start = Time.realtimeSinceStartup;
 
-		_waterPatch.updateCenter(getCenterWorldPosition(), _oceanManager);
+		_waterPatch.sampleOcean(getCenterWorldPosition(), _oceanManager);
 		_waterLinePoints.Clear();
 		_sortedWaterLinePoints.Clear();
 		_submergedTriangleList.Clear();
@@ -386,7 +236,6 @@ public class BoatController : MonoBehaviour {
 				
 				float projectedVel = Vector3.Dot(triCenterVelocity.normalized, tri.Normal);
 				float speedFactor = triCenterVelocity.magnitude / refV;
-				//SimSettings.DragCoefficient
 				
 				
 				if(projectedVel >= 0) {
@@ -439,18 +288,6 @@ public class BoatController : MonoBehaviour {
 				else 
 				{
 					BoatSet.Velocity = 0.0f;
-				}
-				
-
-				if(Input.GetKeyDown(KeyCode.W)) {
-
-				}
-				if(Input.GetKeyDown(KeyCode.S)) {
-
-				}
-				if(Input.GetKeyDown(KeyCode.A)) {
-				}
-				if(Input.GetKeyDown(KeyCode.D)) {
 				}
 			}
 
