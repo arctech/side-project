@@ -21,45 +21,54 @@ public class Arcball {
 	private Vector2 _posDown;
 	private Vector2 _posCurrent;
 	private float _radius;
-	private Quaternion _quatCurrent;
-	private Quaternion _quatNow;
-	private Quaternion _quatDown;
+	private Quaternion _quatCurrent = Quaternion.identity;
+	private Quaternion _quatNow = Quaternion.identity;
+	private Quaternion _quatDown = Quaternion.identity;
 
 
 	public Arcball(){
 		_isDragging = false;
 	}
 
-	private void setMousePos(Vector2 mousePos) {
+	public void setMousePos( Vector2 mousePos ) {
 		_posCurrent = mousePos;
+		Debug.Log( "Arcball:: setting curr pos: " + _posCurrent );
 	}
-	private void place(Vector2 center, float radius) {
+	public void place( Vector2 center, float radius ) {
 		_center = center;
 		_radius = radius;
+		Debug.Log( "Arcball:: place: " + _center + " " + _radius );
 	}
 
-	private void startDragging() {
+	public void startDragging() {
 		_isDragging = true;
 		_posDown = _posCurrent;
 	}
 
-	private void endDragging() {
+	public void endDragging() {
 		_isDragging = false;
 		// save state of quaternion
 		_quatDown = _quatNow;
 	}
 
-	private Matrix4x4 getRotationMatrix() {
-		Vector3 vecFrom = convertMouseToSphere(_posDown);
-		Vector3 vecTo = convertMouseToSphere( _posCurrent);
 
-		if( _isDragging)
+	public Quaternion getRotationMatrix() {
+	//public Matrix4x4 getRotationMatrix() {
+		Vector3 vecFrom = convertMouseToSphere( _posDown );
+		Vector3 vecTo = convertMouseToSphere( _posCurrent );
+
+		Debug.Log( "vecs: " + vecFrom + " " + vecTo );
+
+		if( _isDragging )
 		{
-			_quatCurrent = getQuaternion( vecFrom, vecTo);
+			_quatCurrent = getQuaternion( vecFrom, vecTo );
+			Debug.Log( "quat:" + _quatCurrent );
 			_quatNow = _quatCurrent * _quatDown;
+
 		}
 	
-		return Matrix4x4.TRS( Vector3.zero, _quatNow, new Vector3(1,1,1));
+		return _quatNow;
+//		return Matrix4x4.TRS( Vector3.zero, _quatNow, new Vector3( 1,1,1 ) );
 	}
 
 	/**
@@ -68,23 +77,23 @@ public class Arcball {
 	private Vector3 convertMouseToSphere(Vector2 mousePos) {
 		Vector3 pt = Vector3.zero;
 
-		pt.x = (mousePos.x - _center.x) / _radius;
-		pt.y = (mousePos.y - _center.y) / _radius;
+		pt.x = ( mousePos.x - _center.x ) / _radius;
+		pt.y = ( mousePos.y - _center.y ) / _radius;
 
 		float radius = pt.x * pt.x + pt.y * pt.y;
 
 		if( radius > 1.0f )
 		{
-			float factor = 1.0f / Mathf.Sqrt(radius);
+			float factor = 1.0f / Mathf.Sqrt( radius );
 			pt.x = factor * pt.x;
 			pt.y = factor * pt.y;
 			pt.z = 0.0f;
 		}
 		else
 		{
-			pt.z = Mathf.Sqrt(1.0f - radius);
+			pt.z = Mathf.Sqrt( 1.0f - radius );
 		}
-		return pt;
+		return pt.normalized;
 	}
 
 	/**
@@ -92,12 +101,13 @@ public class Arcball {
 	*/
 	private Quaternion getQuaternion(Vector3 from, Vector3 to) 
 	{
-		Vector3 cross = Vector3.Cross(from, to);
-		float dot = Vector3.Dot(from,to);
-		return new Quaternion(cross.x, cross.y, cross.z, dot);
+		/*Vector3 cross = Vector3.Cross( from, to );
+		float dot = Vector3.Dot( from,to );
+		return new Quaternion( cross.x, cross.y, cross.z, dot );*/
+		return Quaternion.FromToRotation( from, to );
 	}
 
-	private void reset() {
+	public void reset() {
 		_quatDown = Quaternion.identity;
 		_quatNow = Quaternion.identity;
 	}
